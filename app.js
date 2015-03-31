@@ -30,7 +30,8 @@ server.get({path: "/getAppStatus", version: "1"}, functions.getAppStatus);
 //server.post({path: "/createApp", version: "1"}, functions.createApp);
 server.get({path: "/createApp", version: "1"}, functions.createApp);
 server.get({path: "/verifyApp", version: "1"}, functions.verifyApp);
-server.post({path: "/compileApp", version: "1"}, functions.compileApp);
+server.get({path: "/compileApp", version: "1"}, functions.compileApp);
+// server.post({path: "/compileApp", version: "1"}, functions.compileApp);
 server.get({path: "/getApp", version: "1"}, functions.getApp);
 
 
