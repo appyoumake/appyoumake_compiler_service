@@ -15,9 +15,10 @@ var config = require(__dirname + "/config/config.json")[env];
 var fs = require("fs");
 var path = require("path");
 var child_process = require("child_process");
+var log4js = require("log4js"); 
 
 // Some global variables
-var environment, uid, gid;
+var environment, uid, gid, logger;
 
 /*
     Setup various things. Extend environment with key/value pairs given in 
@@ -25,6 +26,30 @@ var environment, uid, gid;
     Node.js starts.
 */
 exports.setup = function() {
+    // Set up log file
+    log4js.configure({
+        "type": "clustered",
+        "appenders": [
+            {
+                "type": "file",
+                "filename": "logs/mlabcompiler.log",
+                "maxLogSize": 10485760,
+                "backups": 10,
+                "category": "mlabcompiler"
+            },
+            {
+                "type": "logLevelFilter",
+                "level": "ERROR",
+                "appender": {
+                    "type": "file",
+                    "filename": "logs/errors.log"
+                }
+            }
+        ]
+    });
+    logger = log4js.getLogger("mlabcompiler");
+    logger.setLevel(config.log_level);
+    
     // Extend user"s environment variables with what was given in config
     var environment = process.env;
     for (key in config.environment) {
@@ -40,32 +65,79 @@ exports.setup = function() {
     // Get user ID/group ID on system
     var user = config.cordova_user || environment.USER;
     // These are asynchronous funcitons, but we assume that no one is making any calls within the first
-    // couple of milliseconds after startup. So we don't bother with a callback in the setup phase.
+    // couple of milliseconds after startup. So we don"t bother with a callback in the setup phase.
     if (user!==environment.USER) {
         // Unix/Linux/OSX
         var getUid = child_process.spawn("id", ["-u", user], {env:environment});
         getUid.stdout.on("data", function(data) {
             uid = parseInt(data.toString());
-            console.log("Running commands as %s, %s", user, uid);
+            exports.log("Running commands as " + user + ", " + uid, exports.logLevel.info, true);
         });
         getUid.stderr.on("data", function (data) {
-            console.log("stderr: " + data);
+            exports.log("stderr: " + data, exports.logLevel.error);
             uid = null;
-        }
+        });
         var getGid = child_process.spawn("id", ["-u", user], {env:environment});
         getGid.stdout.on("data", function(data) {
             gid = parseInt(data.toString());
         });
         getGid.stderr.on("data", function (data) {
-            console.log("stderr: " + data);
+            exports.log("stderr: " + data, exports.logLevel.error);
             gid = null;
-        }
+        });
     }
     else {
         // If we are already running as the user specified in config, we unset these.
         uid = null;
         gid = null;
     }
+    
+
+};
+
+/*
+    Log to file, using log4js
+    @param str: String. String to log. Optional.
+    @param level: Number. Log level, should be fetched from utils.logLevel. Optional.
+    @param toConsole. Boolean. Should we also log to console.log. Optional.
+*/
+exports.log = function(str, level, toConsole) {
+    if (toConsole) console.log(str);
+    switch(level) {
+        case 0:
+            logger.trace(str);
+            break;
+        case 1:
+            logger.debug(str);
+            break;
+        case 2:
+            logger.info(str);
+            break;
+        case 3:
+            logger.warn(str);
+            break;
+        case 4:
+            logger.error(str);
+            break;
+        case 5:
+            logger.fatal(str);
+            break;
+        default:
+            logger.debug(str);
+    }
+};
+
+/*
+    Object containing available log levels
+*/
+exports.logLevel = {
+    trace: 0,
+    debug: 1,
+    info: 2,
+    warn: 3,
+    warning: 3,
+    error: 4,
+    fatal: 5
 };
 
 /*
@@ -93,7 +165,7 @@ exports.getConfig = function() {
 };
 
 /*
-    Get environment. This is a combination of Node.js' process environment, and 
+    Get environment. This is a combination of Node.js" process environment, and 
     values given in config file.
     @return: Object.
 */

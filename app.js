@@ -29,6 +29,7 @@
     Node.js: https://nodejs.org/api/
     Restify: http://mcavage.me/node-restify/#server-api
     xmldoc: https://www.npmjs.com/package/xmldoc
+    log4js: https://github.com/nomiddlename/log4js-node
     PM2: https://github.com/Unitech/pm2
 */
 
@@ -59,5 +60,5 @@ server.get({path: "/getApp", version: "1"}, functions.getApp);
 
 // Start listening
 server.listen(config.port_number ,"localhost", function(){
-    console.log("%s listening at %s ", server.name , server.url);
+    utils.log(server.name + " listening at " + server.url, utils.logLevel.info, true);
 });

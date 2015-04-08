@@ -61,7 +61,7 @@ var config = utils.getConfig();
     }
 */
 exports.getAppStatus = function(req, res, next) {
-    console.log("getAppStatus");
+    utils.log("getAppStatus", utils.logLevel.debug);
     var paramNames = [
         {"name": "app_uid", "required": false},
         {"name": "app_version", "required": false}
@@ -109,18 +109,17 @@ exports.getAppStatus = function(req, res, next) {
     @return true
 */
 exports.createApp = function(req, res, next) {
-    console.log("createApp");
+    utils.log("createApp", utils.logLevel.debug);
 
     /*
         Callback function for when createApp finishes (succesful or not).
         @param app: App object. Optional.
     */
     function createAppFinished(app, app_uid) {
-        console.log("createAppFinished");
+        utils.log("createAppFinished", utils.logLevel.debug);
         // handle error situation, when there is no app, create failed
         if (app) {
             app.getChecksum(function(checksum) {
-                console.log("checksum: " + checksum);
                 performCallback("createApp", {checksum: checksum, app_uid: app.id});
             });
         }
@@ -141,7 +140,7 @@ exports.createApp = function(req, res, next) {
     }
     getApps(params.app_uid, params.app_version, function(apps) {
         if (!apps.length) {
-            console.log("no app");
+            utils.log("no app", utils.logLevel.debug);
             createNewApp(params.app_uid, params.app_version, params.config_xml, createAppFinished);
         }
         else createAppFinished(apps[0], params.app_uid);
@@ -170,7 +169,7 @@ exports.createApp = function(req, res, next) {
     @return true
 */
 exports.verifyApp = function(req, res, next) {
-    console.log("verifyApp");
+    utils.log("verifyApp", utils.logLevel.debug);
     var paramNames = [
         {"name": "app_uid", "required": true},
         {"name": "app_version", "required": true},
@@ -223,7 +222,7 @@ exports.verifyApp = function(req, res, next) {
     @return true
 */
 exports.compileApp = function(req, res, next) {
-    console.log("compileApp");
+    utils.log("compileApp", utils.logLevel.debug);
     var paramNames = [
         {"name": "app_uid", "required": true},
         {"name": "app_version", "required": true},
@@ -246,6 +245,7 @@ exports.compileApp = function(req, res, next) {
                     app.checkCompiled(params.platform, params.checksum, function(compiled) {
                         if (compiled) {
                             // Not sure if "compiled" in callback should be true or false here. App is compiled, but not as result of this request.
+                            utils.log("app already compiled", utils.logLevel.debug);
                             performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, platform: params.platform, result: true}); 
                         }
                         else {
@@ -256,11 +256,13 @@ exports.compileApp = function(req, res, next) {
                     });
                 }
                 else {
+                    utils.log("wrong checksum for app", utils.logLevel.error);
                     performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, platform: params.platform, result: false});
                 }
             });
         }
         else {
+            utils.log("no app found", utils.logLevel.error);
             performCallback("compileApp", {app_uid: params.app_uid, app_version: params.app_version, checksum: null, platform: params.platform, result: false});
         }
     });
@@ -286,7 +288,7 @@ exports.compileApp = function(req, res, next) {
     @return Executable file for this app and platform, or error output.
 */
 exports.getApp = function(req, res, next) {
-    console.log("getApp");
+    utils.log("getApp", utils.logLevel.debug);
     var paramNames = [
         {"name": "app_uid", "required": true},
         {"name": "app_version", "required": true},
@@ -308,7 +310,7 @@ exports.getApp = function(req, res, next) {
                 if (verified) {
                     app.checkCompiled(params.platform, params.checksum, function(compiled) {
                         if (compiled) {
-                            console.log("getting exec file");
+                            utils.log("getting exec file", utils.logLevel.debug);
                             app.getExecutable(params.platform, function(file, fileName, contentType) {
                                 if (file) {
                                     res.contentLength = file.length;
@@ -354,9 +356,8 @@ exports.getApp = function(req, res, next) {
         Should accept one parameter for the array containing the apps. Required.
 */
 function getApps(appUid, appVersion, callback) {
-    console.log("getApps");
+    utils.log("getApps", utils.logLevel.debug);
     var appsPath = [config.cordova_apps_path];
-    console.log(appUid, appVersion);
     if (appUid) {
         appsPath.push(appUid);
         if (appVersion) appsPath.push(appVersion);
@@ -364,7 +365,6 @@ function getApps(appUid, appVersion, callback) {
     var pathLength = appsPath.length;
     appsPath = appsPath.join(path.sep);
     fs.stat(appsPath, function(err, stat) {
-        console.log("stat ok");
         if (err || !stat.isDirectory()) return callback([]);
         // We assume both uid and version is given
         var depth = 0;
@@ -403,7 +403,7 @@ function getApps(appUid, appVersion, callback) {
         App object created and app ID.
 */
 function createNewApp(appUid, appVersion, configXML, callback) {
-    console.log("createNewApp");
+    utils.log("createNewApp", utils.logLevel.debug);
     // Build a list of arguments for cordova
     var args = [];
     args.push("create");
@@ -416,7 +416,7 @@ function createNewApp(appUid, appVersion, configXML, callback) {
     create.on("close", function (code) {
         if (code!==0) {
             // Something went wrong
-            console.log("Cordova create: exit: " + code);
+            utils.log("Cordova create: exit: " + code, utils.logLevel.error);
             return callback(null, appUid);
         }
         // Create was successful, now fetch the app, write the config.xml file, 
@@ -429,10 +429,10 @@ function createNewApp(appUid, appVersion, configXML, callback) {
         });
     });
     create.stdout.on("data", function (data) {
-        console.log("stdout: " + data);
+        utils.log("stdout: " + data, utils.logLevel.debug);
     });
     create.stderr.on("data", function (data) {
-        console.log("stderr: " + data);
+        utils.log("stderr: " + data, utils.logLevel.error);
     });
 };
 
@@ -445,7 +445,7 @@ function createNewApp(appUid, appVersion, configXML, callback) {
     @param params: Object. Get params to append to callback URL.
 */
 function performCallback(callbackType, params) {
-    console.log("performCallback " + callbackType);
+    utils.log("performCallback " + callbackType, utils.logLevel.debug);
     var serverUrl = config.callback_server;
     var transport = http;
     var port = 80;
@@ -455,7 +455,7 @@ function performCallback(callbackType, params) {
     }
     var host = serverUrl.split("/")[2];
     var path = CALLBACK_URIS[callbackType] + "?" + querystring.stringify(params);
-    console.log(host, path);
+    utils.log(host + path, utils.logLevel.debug);
     var options = {
         hostname: host,
         path: path,
@@ -463,12 +463,12 @@ function performCallback(callbackType, params) {
         method: "GET"
     };
     var request = transport.request(options, function(response) {
-        console.log("STATUS: " + response.statusCode);
-        console.log("HEADERS: " + JSON.stringify(response.headers));
+        utils.log("STATUS: " + response.statusCode, utils.logLevel.debug);
     });
     request.on("error", function(e) {
-        console.log("problem with request: " + e.message);
+        utils.log("problem with request: " + e.message, utils.logLevel.error);
     });
+    request.end();
 };
 
 /*
@@ -508,7 +508,7 @@ function checkPassPhrase(params) {
 */
 function prepareRequest(req, paramNames) {
     if (!checkPassPhrase(req.params)) {
-        console.log("bad passphrase");
+        utils.log("bad passphrase", utils.logLevel.error);
         return [403, {}];
     }
     if (!paramNames) paramNames = [];

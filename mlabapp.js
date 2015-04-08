@@ -145,7 +145,7 @@ exports.App.prototype = {
             calculated. Should accept a single parameter for checksum. Required.
     */
     getChecksum: function(callback) {
-        console.log("getChecksum");
+        utils.log("getChecksum", utils.logLevel.debug);
         var app = this;
         // Making a checksum from an entire directory isn't trivial. Taring to 
         // one file, and getting checksum from that.
@@ -173,18 +173,18 @@ exports.App.prototype = {
                 // Store the result
                 app.checksum = data;
                 app.checksumDate = new Date();
-                console.log(app.checksum);
                 // A-OK. Do callback.
+                utils.log("checksum: " + data, utils.logLevel.debug);
                 callback(data);
                 // Remove temp file
                 child_process.spawn("rm", [tempFilePath], {env: environment, uid: utils.getUid(), gid: utils.getGid()});
             });
             checksum.stderr.on("data", function (data) {
-                console.log("stderr: " + data);
+                utils.log("stderr: " + data, utils.logLevel.error);
             });
         });
         tar.stderr.on("data", function (data) {
-            console.log("stderr: " + data);
+            utils.log("stderr: " + data, utils.logLevel.error);
         });
     },
     
@@ -196,7 +196,7 @@ exports.App.prototype = {
             not. Required.
     */
     verify: function(checksum, callback) {
-        console.log("verify");
+        utils.log("verify", utils.logLevel.debug);
         this.getChecksum(function(appChecksum) {
             callback(appChecksum===checksum);
         });
@@ -213,17 +213,17 @@ exports.App.prototype = {
             with a true parameter. Required.
     */
     addPlatform: function(platform, callback) {
-        console.log("addPlatform");
+        utils.log("addPlatform", utils.logLevel.debug);
         var addPlatform = child_process.spawn(config.cordova_bin_path, ["platform", "add", platform], {cwd: this.getPath(), env: environment, uid: utils.getUid(), gid: utils.getGid()});
         addPlatform.on("close", function(code) {
-            if (code!==0) console.log("Error adding platform");
+            if (code!==0) utils.log("Error adding platform", utils.logLevel.error);
             callback(true);
         });
         addPlatform.stderr.on("data", function (data) {
-            console.log("stderr: " + data);
+            utils.log("stderr: " + data, utils.logLevel.error);
         });
         addPlatform.stdout.on("data", function (data) {
-            console.log("stdout: " + data);
+            utils.log("stdout: " + data, utils.logLevel.debug);
         });
     },
     
@@ -236,7 +236,7 @@ exports.App.prototype = {
             boolean parameter indicating if the check was OK or not. Required.
     */
     checkCompiled: function(platform, checksum, callback) {
-        console.log("checkCompiled");
+        utils.log("checkCompiled", utils.logLevel.debug);
         var app = this;
         app.readCompileManifesto(function(read) {
             callback(read && app.compiled && (!checksum || checksum==app.checksumCompiled));
@@ -250,7 +250,7 @@ exports.App.prototype = {
         @param callback: Function. Called when done. Required.
     */
     compile: function(platform, callback) {
-        console.log("compile");
+        utils.log("compile", utils.logLevel.debug);
         this.checkLockAndCompile(platform, 0, callback);
     },
     
@@ -266,27 +266,24 @@ exports.App.prototype = {
             met our time limit and given up. Required.
     */
     checkLockAndCompile: function(platform, timeElapsed, callback) {
-        console.log("checkLockAndCompile " + platform);
+        utils.log("checkLockAndCompile " + platform, utils.logLevel.debug);
         var app = this;
         if (!timeElapsed) timeElapsed = 0;
         // Check file
-        console.log("check lock");
-        console.log("stat-ing file " + app.getLockFilePath(platform));
         fs.stat(app.getLockFilePath(platform), function(err, stat) {
-            console.log("stat: " + err || !stat.isFile());
             // File does not exist or is not a file. Start compilation.
             if (err || !stat.isFile()) app.doCompile(platform, callback);
             // Lock file exists.
             else {
                 // Check if we have passed our timeout
-                console.log("timeElapsed: " + timeElapsed);
+                utils.log("timeElapsed: " + timeElapsed, utils.logLevel.debug);
                 if (timeElapsed>=app.compile_check_max) {
-                    console.log("giving up");
+                    utils.log("giving up compile, took too long", utils.logLevel.error);
                     callback(true);
                 }
                 // Otherwise, wait some time and try again
                 else {
-                    console.log("wait");
+                    utils.log("wait for compile lock file to disappear", utils.logLevel.debug);
                     setTimeout(function() { 
                         timeElapsed += app.compile_check_interval;
                         app.checkLockAndCompile(platform, timeElapsed, callback);
@@ -304,17 +301,16 @@ exports.App.prototype = {
             parameter. Required.
     */
     doCompile: function(platform, callback) {
-        console.log("doCompile");
+        utils.log("doCompile", utils.logLevel.debug);
         var app = this;
         // Write a lock file
-        console.log("write lock file");
         fs.writeFile(app.getLockFilePath(platform), "y");
-        console.log("lock file written");
         // Add the platform we are requesting
         app.addPlatform(platform, function(platformAdded) {
             // Do callback if platform has not been added
             if (!platformAdded) return callback(false);
             // Start compilation process
+            utils.log("compiling...", utils.logLevel.debug);
             var compile = child_process.spawn(config.cordova_bin_path, ["build"], {cwd: app.getPath(), env: environment, uid: utils.getUid(), gid: utils.getGid()});
     
             
@@ -325,22 +321,22 @@ exports.App.prototype = {
                 
                 // Do false callback if we got an error
                 if (code!==0) {
-                    console.log("Error compiling");
+                    utils.log("Error compiling", utils.logLevel.error);
                     return callback(false);
                 }
                 // Save info about compilation, and write manifesto to file
                 app.compiled = true;
                 app.compiledDate = new Date();
-                console.log("writing manifesto");
+                utils.log("writing manifesto", utils.logLevel.debug);
                 app.writeCompileManifesto(platform, function() {
                     callback(true);
                 });
             });
             compile.stderr.on("data", function (data) {
-                console.log("stderr: " + data);
+                utils.log("stderr: " + data, utils.logLevel.error);
             });
             compile.stdout.on("data", function (data) {
-                //console.log("stdout: " + data);
+                //utils.log("stdout: " + data, utils.logLevel.trace);
             });
         });
     },
@@ -378,7 +374,6 @@ exports.App.prototype = {
     */
     writeCompileManifesto: function(platform, callback) {
         var filePath = this.getManifestoFilePath();
-        console.log(filePath);
         var manifesto = this.output();
         fs.writeFile(filePath, JSON.stringify(manifesto), function(err) {
             callback(true);
@@ -429,7 +424,7 @@ exports.App.prototype = {
             configXML = fs.readFileSync(filePath, {encoding: "utf-8"});
             configXML = new xmldoc.XmlDocument(configXML);
         } catch (e) {
-            console.log(e);
+            utils.log(e, utils.logLevel.error);
         }
         return configXML;
     },
