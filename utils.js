@@ -1,10 +1,10 @@
-/** @module Utils */
-/*
+/**
     MLAB Compiler Service
     Utility functions
     
-    Author: Snapper Net Solutions
-    Copyright (c) 2015
+    @author Author: Snapper Net Solutions
+    @copyright Copyright (c) 2015
+    @module Utils
 */
 
 // Get config. To switch between development and production modes, set the 
@@ -22,9 +22,7 @@ var log4js = require("log4js");
 var environment, uid, gid, logger;
 
 /**
-    Setup various things. Extend environment with key/value pairs given in 
-    config. Get uid and gid from system, based on config. Should be called when 
-    Node.js starts.
+    Setup various things. Extend environment with key/value pairs given in config. Get uid and gid from system, based on config. Should be called when Node.js starts.
 */
 exports.setup = function() {
     // Set up log file
@@ -102,8 +100,7 @@ exports.setup = function() {
 /**
     Log to file, using log4js
     @param {String} str - String to log. Optional.
-    @param {Number} level - Log level, should be fetched from utils.logLevel. 
-        Optional.
+    @param {Number} level - Log level, should be fetched from utils.logLevel. Optional.
     @param {Boolean} toConsole - Should we also log to console.log. Optional.
 */
 exports.log = function(str, level, toConsole) {
@@ -171,8 +168,7 @@ exports.getConfig = function() {
 };
 
 /**
-    Get environment. This is a combination of Node.js" process environment, and 
-    values given in config file.
+    Get environment. This is a combination of Node.js" process environment, and values given in config file.
     @returns {Object}
 */
 exports.getEnvironment = function(platform) {
@@ -188,14 +184,10 @@ exports.getEnvironment = function(platform) {
 };
 
 /**
-    Get all directories recursively from basePath. Stops at depth and calls 
-    callback function.
+    Get all directories recursively from basePath. Stops at depth and calls callback function.
     @param {String} basepath - Path to start at. Required.
-    @param {Number} depth - Depth to search. Counts down for every recursive call, 
-        and when it reaches zero, the callback function is called. Required.
-    @param {Function} callback - Callback function to call when finished. Should 
-        accept parameter containing array of absolute paths for all the 
-        directories found. Required.
+    @param {Number} depth - Depth to search. Counts down for every recursive call, and when it reaches zero, the callback function is called. Required.
+    @param {Function} callback - Callback function to call when finished. Should accept parameter containing array of absolute paths for all the directories found. Required.
     @param {Array} dir - Directories found so far, and to build on. Optional.
 */
 exports.getDirs = function(basePath, depth, callback, dirs) {
@@ -214,11 +206,9 @@ exports.getDirs = function(basePath, depth, callback, dirs) {
 
 
 /**
-    Clone an object. This will not work for all objects, only objects with 
-    simple (enough) properties.
+    Clone an object. This will not work for all objects, only objects with simple (enough) properties.
     @param {Object} ob - The Object to be cloned.
-    @param {Boolean} deep - Controls whether we should recurse into sub-objects. 
-        Might cause inifite loops.
+    @param {Boolean} deep - Controls whether we should recurse into sub-objects. Might cause inifite loops.
     @returns {Object} New, identical object
 */
 exports.clone = function(ob,deep) {

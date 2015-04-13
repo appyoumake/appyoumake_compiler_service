@@ -1,9 +1,10 @@
-/*
+/**
     MLAB Compiler Service
     App class
     
-    Author: Snapper Net Solutions
-    Copyright (c) 2015
+    @author Author: Snapper Net Solutions
+    @copyright Copyright (c) 2015
+    @module MLAB App
 */
 
 
@@ -21,16 +22,12 @@ var environment = utils.getEnvironment();
 var config = utils.getConfig();
 
 /**
-    App class. Contains all necessary information and all functions to operate 
-    on an app.
+    App class. Contains all necessary information and all functions to operate on an app.
     @class
     @param {String} id - ID of app.
     @param {String} version - Version of app.
     @param {String} name - Name of app.
-    @param {Function} callback - Reading the compile manifesto file is an 
-        asynchronous operation, and is done as part of the initialization of 
-        the object. If we need to wait for this to be read before we proceed, 
-        we provide a callback that is called when manifesto file is read.
+    @param {Function} callback - Reading the compile manifesto file is an asynchronous operation, and is done as part of the initialization of the object. If we need to wait for this to be read before we proceed, we provide a callback that is called when manifesto file is read.
 */
 exports.App = function(id, version, name, callback) {
     this.id = id;
@@ -84,8 +81,7 @@ exports.App = function(id, version, name, callback) {
 */
 exports.App.prototype = {
     /**
-        Get the base path for the app. Consists of cordova_apps_path from 
-        config, plus App's ID and version. All other paths are based on this.
+        Get the base path for the app. Consists of cordova_apps_path from config, plus App's ID and version. All other paths are based on this.
         @returns {String} App's path.
     */
     getPath: function() {
@@ -93,8 +89,7 @@ exports.App.prototype = {
     },
 
     /**
-        Get the path for the lock file, used when compiling app to avoid
-        concurrent compile jobs.
+        Get the path for the lock file, used when compiling app to avoid concurrent compile jobs.
         @param {String} platform - Name of platform we are compiling for. Required.
         @returns {String} Path to lock file.
     */
@@ -103,8 +98,7 @@ exports.App.prototype = {
     },
 
     /**
-        Get the path for the compile menifesto file. This is a file where we 
-        keep information about the last compile.
+        Get the path for the compile menifesto file. This is a file where we keep information about the last compile.
         @returns {String} Path to compile manifesto file.
     */
     getManifestoFilePath: function() { // platform
@@ -121,10 +115,8 @@ exports.App.prototype = {
     },
     
     /**
-        Get the path for the directory where executables are kept. Not to the 
-        executable itself, but the directory.
-        @param {String} platform - The platform for which we want executables. 
-            Required.
+        Get the path for the directory where executables are kept. Not to the executable itself, but the directory.
+        @param {String} platform - The platform for which we want executables. Required.
         @returns {String} Path to directory.
     */
     getExecutableDirPath: function(platform) {
@@ -141,10 +133,8 @@ exports.App.prototype = {
     },
 
     /**
-        Calculated an md5 checksum for the www directory within the Cordova app. 
-        Does a callback with the checksum as parameter when done.
-        @param {Function} callback - Callback function to call when checksum is 
-            calculated. Should accept a single parameter for checksum. Required.
+        Calculated an md5 checksum for the www directory within the Cordova app. Does a callback with the checksum as parameter when done.
+        @param {Function} callback - Callback function to call when checksum is calculated. Should accept a single parameter for checksum. Required.
     */
     getChecksum: function(callback) {
         utils.log("getChecksum", utils.logLevel.debug);
@@ -193,9 +183,7 @@ exports.App.prototype = {
     /**
         Check if given checksum matches what is calculated from www directory.
         @param {String} checksum - MD5 checksum to check against. Required.
-        @param {Function} callback - Callback function to call when done. Should.
-            accept a single boolean parameter indicating if checksums matched or
-            not. Required.
+        @param {Function} callback - Callback function to call when done. Should accept a single boolean parameter indicating if checksums matched or not. Required.
     */
     verify: function(checksum, callback) {
         utils.log("verify", utils.logLevel.debug);
@@ -205,14 +193,9 @@ exports.App.prototype = {
     },
     
     /**
-        Add platform (android, ios, etc) to Cordova app. Done "just in case". 
-        If platform already exists, this will fail, so we are not handling 
-        errors here. If adding the platform fails otherwise, the subsequent 
-        compile job will also fail, and you will need to do some work on your 
-        server anyway.
+        Add platform (android, ios, etc) to Cordova app. Done "just in case". If platform already exists, this will fail, so we are not handling errors here. If adding the platform fails otherwise, the subsequent compile job will also fail, and you will need to do some work on your server anyway.
         @param {String} platform - Platform to add. Required.
-        @param {Function} callback - Callback function called when done, always,
-            with a true parameter. Required.
+        @param {Function} callback - Callback function called when done, always with a true parameter. Required.
     */
     addPlatform: function(platform, callback) {
         utils.log("addPlatform", utils.logLevel.debug);
@@ -230,12 +213,10 @@ exports.App.prototype = {
     },
     
     /**
-        Check if app was compiled, and if it was compiled with a contents 
-        matching the checksum given.
+        Check if app was compiled, and if it was compiled with a contents matching the checksum given.
         @param {String} platform - Platform to check against. Required.
         @param {String} checksum - MD5 checksum to check against. Required.
-        @param {Function} callback - Called when done. Should accept single 
-            boolean parameter indicating if the check was OK or not. Required.
+        @param {Function} callback - Called when done. Should accept single boolean parameter indicating if the check was OK or not. Required.
     */
     checkCompiled: function(platform, checksum, callback) {
         utils.log("checkCompiled", utils.logLevel.debug);
@@ -246,8 +227,7 @@ exports.App.prototype = {
     },
     
     /**
-        Wrapper function that kicks off the compile job, which may have to wait 
-        for a lock file to disappear.
+        Wrapper function that kicks off the compile job, which may have to wait for a lock file to disappear.
         @param {String} platform - Platform to compile for. Required.
         @param {Function} callback - Called when done. Required.
     */
@@ -258,14 +238,10 @@ exports.App.prototype = {
     
 
     /**
-        Checks if lock file is present for app/platform. If not, starts 
-        compilation. If it is, wait for a period, and try again. This can 
-        continue until a max time limit is reached.
+        Checks if lock file is present for app/platform. If not, starts compilation. If it is, wait for a period, and try again. This can continue until a max time limit is reached.
         @param {String} platform - Platform to compile for. Required.
-        @param {Number} timeElepased - Milliseconds since we first tried. Must be 
-            parameter for recursive use of this function. Optional.
-        @param {Function} callback - Called when compile is finished, or we have 
-            met our time limit and given up. Required.
+        @param {Number} timeElepased - Milliseconds since we first tried. Must be parameter for recursive use of this function. Optional.
+        @param {Function} callback - Called when compile is finished, or we have met our time limit and given up. Required.
     */
     checkLockAndCompile: function(platform, timeElapsed, callback) {
         utils.log("checkLockAndCompile " + platform, utils.logLevel.debug);
@@ -296,11 +272,9 @@ exports.App.prototype = {
     },
     
     /**
-        Compile the Cordova app. Writes a lock file on start, and deletes it 
-        when finished.
+        Compile the Cordova app. Writes a lock file on start, and deletes it when finished.
         @param {String} platform - Platform to compile for. Required.
-        @param {Function} callback - Called when done, with a single boolean 
-            parameter. Required.
+        @param {Function} callback - Called when done, with a single boolean parameter. Required.
     */
     doCompile: function(platform, callback) {
         utils.log("doCompile", utils.logLevel.debug);
@@ -344,8 +318,7 @@ exports.App.prototype = {
     },
     
     /**
-        Reads the compile manifesto file and stores the info in Object's 
-        attributes.
+        Reads the compile manifesto file and stores the info in Object's attributes.
         @param {Function} callback - Called when done, or failed. Should accept 
             single boolean parameter indicating success or failure. Required.
     */
@@ -368,11 +341,9 @@ exports.App.prototype = {
     },
 
     /**
-        Writes a new compile manifesto file based on info stored in Object. 
-        Overwrites any existing file.
+        Writes a new compile manifesto file based on info stored in Object. Overwrites any existing file.
         @param {String} platform - NOT USED for now.
-        @param {Function} callback - Called when done, with true as only 
-            parameter.
+        @param {Function} callback - Called when done, with true as only parameter.
     */
     writeCompileManifesto: function(platform, callback) {
         var filePath = this.getManifestoFilePath();
@@ -385,9 +356,7 @@ exports.App.prototype = {
     /**
         Get the Crodova app's actual executable file for platform.
         @param {String} platform - Platform to get file for. Required.
-        @param {Function} callback - Called when done. If no file is found, 
-            callback should accept a single false parameter. If successful, 
-            callback should accept three parameters:
+        @param {Function} callback - Called when done. If no file is found, callback should accept a single false parameter. If successful, callback should accept three parameters:
             - the file contents
             - the file name to be presented to client
             - the mime type for the file
@@ -414,8 +383,7 @@ exports.App.prototype = {
     },
     
     /**
-        Get contents of config.xml file for Cordova app. Contents is parsed 
-        using xmldoc module.
+        Get contents of config.xml file for Cordova app. Contents is parsed using xmldoc module.
         @returns {Object} xmldoc object
     */
     getConfig: function() {
@@ -441,12 +409,9 @@ exports.App.prototype = {
     },
     
     /**
-        Write a new config.xml file. Will overwrite any existing file. No check 
-        is done on the contents of the file, but subsequent compile jobs will 
-        fail if this file is not correct.
+        Write a new config.xml file. Will overwrite any existing file. No check is done on the contents of the file, but subsequent compile jobs will fail if this file is not correct.
         @param {String} configXML - File contents to write. Required.
-        @param {Function} callback - Called when done, with App object as 
-            parameter. Required.
+        @param {Function} callback - Called when done, with App object as parameter. Required.
     */
     writeConfig: function(configXML, callback) {
         var app = this;
