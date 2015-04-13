@@ -1,3 +1,4 @@
+/** @module Utils */
 /*
     MLAB Compiler Service
     Utility functions
@@ -20,7 +21,7 @@ var log4js = require("log4js");
 // Some global variables
 var environment, uid, gid, logger;
 
-/*
+/**
     Setup various things. Extend environment with key/value pairs given in 
     config. Get uid and gid from system, based on config. Should be called when 
     Node.js starts.
@@ -51,10 +52,11 @@ exports.setup = function() {
     logger.setLevel(config.log_level);
     
     // Extend user"s environment variables with what was given in config
-    var environment = process.env;
-    for (key in config.environment) {
+    environment = process.env;
+    for (key in config.environment || {}) {
         var value = config.environment[key];
-        // If value starts with $:, this means that we should append value, not replace
+        // If value starts with $:, this means that we should append value, not 
+        // replace
         if (value.slice(0,2)=="$:") {
             value = value.slice(1);
             if (key in environment) value = environment[key] + value;
@@ -64,8 +66,9 @@ exports.setup = function() {
     
     // Get user ID/group ID on system
     var user = config.cordova_user || environment.USER;
-    // These are asynchronous funcitons, but we assume that no one is making any calls within the first
-    // couple of milliseconds after startup. So we don"t bother with a callback in the setup phase.
+    // These are asynchronous funcitons, but we assume that no one is making any 
+    // calls within the first couple of milliseconds after startup. So we 
+    // don't bother with a callback in the setup phase.
     if (user!==environment.USER) {
         // Unix/Linux/OSX
         var getUid = child_process.spawn("id", ["-u", user], {env:environment});
@@ -77,7 +80,7 @@ exports.setup = function() {
             exports.log("stderr: " + data, exports.logLevel.error);
             uid = null;
         });
-        var getGid = child_process.spawn("id", ["-u", user], {env:environment});
+        var getGid = child_process.spawn("id", ["-g", user], {env:environment});
         getGid.stdout.on("data", function(data) {
             gid = parseInt(data.toString());
         });
@@ -87,7 +90,8 @@ exports.setup = function() {
         });
     }
     else {
-        // If we are already running as the user specified in config, we unset these.
+        // If we are already running as the user specified in config, we unset 
+        // these.
         uid = null;
         gid = null;
     }
@@ -95,13 +99,15 @@ exports.setup = function() {
 
 };
 
-/*
+/**
     Log to file, using log4js
-    @param str: String. String to log. Optional.
-    @param level: Number. Log level, should be fetched from utils.logLevel. Optional.
-    @param toConsole. Boolean. Should we also log to console.log. Optional.
+    @param {String} str - String to log. Optional.
+    @param {Number} level - Log level, should be fetched from utils.logLevel. 
+        Optional.
+    @param {Boolean} toConsole - Should we also log to console.log. Optional.
 */
 exports.log = function(str, level, toConsole) {
+    if (!str) str = "";
     if (toConsole) console.log(str);
     switch(level) {
         case 0:
@@ -127,7 +133,7 @@ exports.log = function(str, level, toConsole) {
     }
 };
 
-/*
+/**
     Object containing available log levels
 */
 exports.logLevel = {
@@ -140,49 +146,57 @@ exports.logLevel = {
     fatal: 5
 };
 
-/*
+/**
     Get system UID for user defined in config. Should already be set up.
-    @return: Number. UID.
+    @returns {Number} UID.
 */
 exports.getUid = function() {
     return uid;
 };
 
-/*
+/**
     Get system GID for user defined in config. Should already be set up.
-    @return: Number. GID.
+    @returns {Number} GID.
 */
 exports.getGid = function() {
     return gid;
 };
 
-/*
+/**
     Get config object.
-    @return: Object.
+    @returns {Object}
 */
 exports.getConfig = function() {
     return config;
 };
 
-/*
+/**
     Get environment. This is a combination of Node.js" process environment, and 
     values given in config file.
-    @return: Object.
+    @returns {Object}
 */
-exports.getEnvironment = function() {
-    return environment;
+exports.getEnvironment = function(platform) {
+    var env  = environment;
+    if (platform) {
+        console.log(environment);
+        env = exports.clone(environment);
+        for (key in config[platform] || {}) {
+            env[key] = config[platform][key];
+        }
+    }
+    return env;
 };
 
-/*
+/**
     Get all directories recursively from basePath. Stops at depth and calls 
     callback function.
-    @param basepath: String. Path to start at. Required.
-    @param depth: Depth to search. Counts down for every recursive call, 
+    @param {String} basepath - Path to start at. Required.
+    @param {Number} depth - Depth to search. Counts down for every recursive call, 
         and when it reaches zero, the callback function is called. Required.
-    @param callback: Function. Callback function to call when finished. Should 
+    @param {Function} callback - Callback function to call when finished. Should 
         accept parameter containing array of absolute paths for all the 
         directories found. Required.
-    @param dir: Array. Directories found so far, and to build on. Optional.
+    @param {Array} dir - Directories found so far, and to build on. Optional.
 */
 exports.getDirs = function(basePath, depth, callback, dirs) {
     if (!dirs) dirs = []
@@ -198,3 +212,33 @@ exports.getDirs = function(basePath, depth, callback, dirs) {
     });
 };
 
+
+/**
+    Clone an object. This will not work for all objects, only objects with 
+    simple (enough) properties.
+    @param {Object} ob - The Object to be cloned.
+    @param {Boolean} deep - Controls whether we should recurse into sub-objects. 
+        Might cause inifite loops.
+    @returns {Object} New, identical object
+*/
+exports.clone = function(ob,deep) {
+  var objectClone = {};
+  for (var property in ob)
+    if (!deep)
+      objectClone[property] = ob[property];
+    else if (typeof ob[property] == 'object' && ob[property])
+      objectClone[property] = clone(ob[property], deep);
+    else
+      objectClone[property] = ob[property];
+  return objectClone;
+}
+
+
+/**
+    Helper function for check the ends of strings. Since this is added to 
+    String's prototype, it will apply to all strings in the project.
+*/
+if (typeof String.prototype.endsWith != 'function') { String.prototype.endsWith = function (str){
+    try { return this.slice(-str.length) == str; }
+    catch(e) { return false; }
+};}

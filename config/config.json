@@ -4,26 +4,28 @@
     "cordova_bin_path": "cordova",
     "cordova_apps_path": "/srv/mlab/compilerservice/mlabcompiler/apps",
     "cordova_user": "morten",
-    "passphrase": "RLjYNDVQEh6fA*;zthtftc9m",
-    "environment": {
+    "key": "RLjYNDVQEh6fA*;zthtftc9m",
+    "callback_server": "https://notworking.snappergrape.no",
+    "log_level": "DEBUG",
+    "environment": {},
+    "android": {
         "ANDROID_HOME": "/srv/mlab/android-sdk-linux/",
         "JAVA_HOME": "/usr/lib/jvm/java-7-openjdk-amd64/jre/"
-    },
-    "callback_server": "https://notworking.snappergrape.no",
-    "log_level": "DEBUG"
+    }
   },
   "production": {
     "port_number": 8283,
     "cordova_bin_path": "cordova",
     "cordova_apps_path": "/srv/mlab/compilerservice/mlabcompiler/apps",
     "cordova_user": "morten",
-    "passphrase": "RLjYNDVQEh6fA*;zthtftc9m",
-    "environment": {
+    "key": "RLjYNDVQEh6fA*;zthtftc9m",
+    "callback_server": "https://notworking.snappergrape.no",
+    "log_level": "ERROR",
+    "environment": {},
+    "android": {
         "ANDROID_HOME": "/srv/mlab/android-sdk-linux/",
         "JAVA_HOME": "/usr/lib/jvm/java-7-openjdk-amd64/jre/"
-    },
-    "callback_server": "https://notworking.snappergrape.no",
-    "log_level": "ERROR"
+    }
   }
 }
 

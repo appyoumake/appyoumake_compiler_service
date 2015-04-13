@@ -1,3 +1,4 @@
+/** @module Functions */
 /*
     MLAB Compiler Service
     Functions for app
@@ -5,6 +6,7 @@
     Author: Snapper Net Solutions
     Copyright (c) 2015
 */
+
 // Add Node modules
 var fs = require("fs");
 var path = require("path");
@@ -35,7 +37,7 @@ var config = utils.getConfig();
     Functions exported in module, and thus available as functions.funcionName().
 *******************************************************************************/
 
-/*
+/**
     Gets status for app or apps. If 
     Parameters in request:
         passphrase: String. Shared secret to validate request. Required.
@@ -45,10 +47,7 @@ var config = utils.getConfig();
     If app_uid is given, but not app_version, will return all version for that 
     app.
     If app_uid and app_version is given, will return that specific app.
-    @param req: Restify request object.
-    @param res: Restify response object.
-    @param next: Function to call next.
-    @return Object, on the form:
+    Sends response as JSON on the form:
     {
         <app id, string>: [
             {
@@ -58,7 +57,10 @@ var config = utils.getConfig();
             }
         ],
         ...
-    }
+    }    
+    @param {Object} req - Restify request object
+    @param {Object} res - Restify response object
+    @param {Function} next - Function to call next
 */
 exports.getAppStatus = function(req, res, next) {
     utils.log("getAppStatus", utils.logLevel.debug);
@@ -90,7 +92,7 @@ exports.getAppStatus = function(req, res, next) {
     return next();
 };
 
-/*
+/**
     Create a new Cordova app. This is an asynchronous function, in that it 
     always returns true, and fetches a callback URL when done. If app already 
     exists, fetch callback URL with app info as if it was created by this call.
@@ -103,17 +105,17 @@ exports.getAppStatus = function(req, res, next) {
     Info sent in callback URL:
         checksum: String. Checksum of entire www directory in app
         app_uid: String. ID of app
-    @param req: Restify request object.
-    @param res: Restify response object.
-    @param next: Function to call next.
-    @return true
+    Sends JSON response as an always true Boolean.
+    @param {Object} req - Restify request object
+    @param {Object} res - Restify response object
+    @param {Function} next - Function to call next
 */
 exports.createApp = function(req, res, next) {
     utils.log("createApp", utils.logLevel.debug);
 
     /*
         Callback function for when createApp finishes (succesful or not).
-        @param app: App object. Optional.
+        @param {App object} app - Optional.
     */
     function createAppFinished(app, app_uid) {
         utils.log("createAppFinished", utils.logLevel.debug);
@@ -149,7 +151,7 @@ exports.createApp = function(req, res, next) {
     return next();
 };
 
-/*
+/**
     Verify that the app contains what we expect. This is done by comparing a 
     given checksum to the calculated checksum of what is on disk. This is an 
     asynchronous call. It always returns true, and fetches a callback URL when 
@@ -163,10 +165,10 @@ exports.createApp = function(req, res, next) {
         app_uid: String. ID of app checked
         app_version: String. Version of app checked
         result: Boolean. The result of the checksum comparison.
-    @param req: Restify request object.
-    @param res: Restify response object.
-    @param next: Function to call next.
-    @return true
+    Sends JSON response as an always true Boolean.
+    @param {Object} req - Restify request object
+    @param {Object} res - Restify response object
+    @param {Function} next - Function to call next
 */
 exports.verifyApp = function(req, res, next) {
     utils.log("verifyApp", utils.logLevel.debug);
@@ -197,7 +199,7 @@ exports.verifyApp = function(req, res, next) {
     return next();
 };
 
-/*
+/**
     Compile app, using Cordova's functions, after performing some internal 
     checks. This is an aynchronous call. It always returns true, and fetches a 
     callback URL when done. If app does not exist, if the checksums don't match,
@@ -216,10 +218,10 @@ exports.verifyApp = function(req, res, next) {
         platform: String. Platform that was compiled for.
         result: Boolean. The result of the compilation. True if compile was OK, 
             false if not.
-    @param req: Restify request object.
-    @param res: Restify response object.
-    @param next: Function to call next.
-    @return true
+    Sends JSON response as an always true Boolean.
+    @param {Object} req - Restify request object
+    @param {Object} res - Restify response object
+    @param {Function} next - Function to call next
 */
 exports.compileApp = function(req, res, next) {
     utils.log("compileApp", utils.logLevel.debug);
@@ -271,7 +273,7 @@ exports.compileApp = function(req, res, next) {
     return next();
 };
 
-/*
+/**
     Get the actual executable file for given app ID, version, and platform. 
     Performs a few internal checks first. If app doesn't exist, checksum doesn't 
     match, app isn't compiled or executable file isn't found, returns and error 
@@ -282,10 +284,10 @@ exports.compileApp = function(req, res, next) {
         app_version: String. Version number of app. Required.
         checksum: String. Checksum to check against. Required.
         platform: String. Name of platform to compile for. Required.
-    @param req: Restify request object.
-    @param res: Restify response object.
-    @param next: Function to call next.
-    @return Executable file for this app and platform, or error output.
+    Sends a response containing the file, or a JSON object with error response.
+    @param {Object} req - Restify request object
+    @param {Object} res - Restify response object
+    @param {Function} next - Function to call next
 */
 exports.getApp = function(req, res, next) {
     utils.log("getApp", utils.logLevel.debug);
@@ -344,15 +346,15 @@ exports.getApp = function(req, res, next) {
     Internal functions, not exported in module
 *******************************************************************************/
 
-/*
+/**
     Get one or more apps matching the parameters given. Traverses the app 
     directory structure and fetches apps accordingly. If neither appUid nor 
     appVersion if given, will return all apps in directory. If only appUid is 
     given, will return all versions for that app. Does a callback when done, 
     with the result.
-    @param appUid: String. ID of app. Optional.
-    @param appVersion: String. Version of app. Optional.
-    @param callback: Function. Callback function to be called when done. 
+    @param {String} appUid - ID of app. Optional.
+    @param {String} appVersion - Version of app. Optional.
+    @param {Function} callback - Callback function to be called when done. 
         Should accept one parameter for the array containing the apps. Required.
 */
 function getApps(appUid, appVersion, callback) {
@@ -393,13 +395,13 @@ function getApps(appUid, appVersion, callback) {
     });
 };
 
-/*
+/**
     Create a new Cordova app. Also writes a new config.xml file from given 
     parameter. Does a callback with the new App object as parameter when done.
-    @param appUid: String. ID of app. Required.
-    @param appVersion: String. Version of app. Required.
-    @param configXML: String. Contents for config.xml file. Required.
-    @param callback: Callback to call when done. Should accept parameter for 
+    @param {String} appUid - ID of app. Required.
+    @param {String} appVersion - Version of app. Required.
+    @param {String} configXML - Contents for config.xml file. Required.
+    @param {Function} callback - Callback to call when done. Should accept parameter for 
         App object created and app ID.
 */
 function createNewApp(appUid, appVersion, configXML, callback) {
@@ -436,13 +438,13 @@ function createNewApp(appUid, appVersion, configXML, callback) {
     });
 };
 
-/*
+/**
     Generic function to fetch a callback URL. The callback server is defined in 
     config.callback_server.
-    @param callbackType: String. What callback to perform. Looks at 
+    @param {String} callbackType - What callback to perform. Looks at 
         CALLBACK_URIS to see what URI should be called. Allowed values: 
         "createApp", "verifyApp", "compiledApp". Required.
-    @param params: Object. Get params to append to callback URL.
+    @param {Object} params - Get params to append to callback URL.
 */
 function performCallback(callbackType, params) {
     utils.log("performCallback " + callbackType, utils.logLevel.debug);
@@ -471,12 +473,12 @@ function performCallback(callbackType, params) {
     request.end();
 };
 
-/*
+/**
     Generic function to output error response through restify's response object.
-    @param res: Restify response object. Required.
-    @param code: Number. Error code. Should ideally match HTTP error codes. 
+    @param {Object} res - Restify response objectRequired.
+    @param {Number} code - Error code. Should ideally match HTTP error codes. 
         Optional. Default 500.
-    @param message: String. Error message. Optional. Default "Unknown error".
+    @param {String} message - Error message. Optional. Default "Unknown error".
 */
 function outputError(res, code, message) {
     if (!code) code = 500;
@@ -484,27 +486,28 @@ function outputError(res, code, message) {
     res.send(code, {"code":code, "message": message});
 }
 
-/*
+/**
     Check if given passphrase matches the one we have in our config file.
-    @params: Object. All the params given in request. Should contain 
+    @param {Object} params - All the params given in request. Should contain 
     "passphrase".
-    @return: Boolean. True if match, false if not.
+    @returns {Boolean} True if match, false if not.
 */
 function checkPassPhrase(params) {
     var passphrase = null;
     if ("passphrase" in params) passphrase = params.passphrase
-    return passphrase===config.passphrase;
+    return passphrase===config.key;
 };
 
-/*
+/**
     Do some checks and preparations common to all calls. Check if passphrase 
     matches, returns response code 403 if not. Check if all required params are 
     present, returns response code 500 if not. If everything is OK, returns 
     response code 200 and params.
-    @param req: Restify request object. Required.
-    @param paramNames: Array of objects. The params to return. format: 
+    @param {Object} req - Restify request objectRequired.
+    @param {Array} paramNames - Array of objects. The params to return. format: 
         [{name: <param name>, required: <boolean>}, ...]
-    @return: Array with two elements: response code, and object with params.
+    @returns {Array} Array with two elements: response code, and object 
+        with params.
 */
 function prepareRequest(req, paramNames) {
     if (!checkPassPhrase(req.params)) {
