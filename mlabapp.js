@@ -13,6 +13,8 @@ var fs = require("fs");
 var path = require("path");
 var child_process = require("child_process");
 var xmldoc = require("xmldoc");
+var ncp = require('ncp').ncp;
+ncp.limit = 16;
 
 // Add Mlab modules
 var utils = require('./utils.js');
@@ -62,11 +64,13 @@ exports.App = function(id, version, name, callback) {
     this.compile_check_max = 60000; // 1 minute
     // File extensions for execeutable files
     this.platform_exec_extensions = {
-        "android": "apk"
+        "android": "apk",
+        "ios": "ipa"
     };
     // Mime types for executable files
     this.platform_exec_mime_types = {
-        "android": "application/vnd.android.package-archive"
+        "android": "application/vnd.android.package-archive",
+        "ios": "application/octet-stream"
     };
     
     var app = this;
@@ -120,7 +124,13 @@ exports.App.prototype = {
         @returns {String} Path to directory.
     */
     getExecutableDirPath: function(platform) {
-        return path.join(this.getPath(), "platforms", platform, "out");
+        var dirPath = "";
+        if (platform==="android" || platform==="ios") dirPath = path.join(this.getPlatformPath(platform), "out");
+        return dirPath;
+    },
+
+    getPlatformPath: function(platform) {
+        return path.join(this.getPath(), "platforms", platform);
     },
 
     /**
@@ -156,11 +166,20 @@ exports.App.prototype = {
             // If tar failed, do callback with null
             if (code!==0) return callback(null);
             // Tar went OK, now calculate md5 sum for tar file
-            var checksum = child_process.spawn("md5sum", [tempFilePath], {env: environment, uid: utils.getUid(), gid: utils.getGid()});
+            var md5cmd = "";
+            var md5args = [tempFilePath];
+            if (config.os==="linux") {
+                md5cmd = "md5sum";
+            }
+            else if (config.os==="osx") {
+                md5cmd = "md5";
+            }
+            var checksum = child_process.spawn(md5cmd, md5args, {env: environment, uid: utils.getUid(), gid: utils.getGid()});
             checksum.stdout.on("data", function(data) {
                 data = data.toString();
-                // The return value contains the file path. Remove this.
-                data = data.replace(tempFilePath, "");
+                // The return value contains the file path, etc. Remove this.
+                data = data.split(" ");
+                data = data[data.length-1];
                 data = data.trim();
                 // Store the result
                 app.checksum = data;
@@ -193,12 +212,12 @@ exports.App.prototype = {
     },
     
     /**
-        Add platform (android, ios, etc) to Cordova app. Done "just in case". If platform already exists, this will fail, so we are not handling errors here. If adding the platform fails otherwise, the subsequent compile job will also fail, and you will need to do some work on your server anyway.
+        Add platform (android, ios, etc) to Cordova app. Done "anyways". If platform has already been added, this will fail, so we are not handling errors here. If adding the platform fails otherwise (ie. if platform hasn't been set up properly on server, the paths are wrong, etc), the subsequent compile job will also fail, and you will need to do some work on your server anyway. So that's why no errors are caught here.
         @param {String} platform - Platform to add. Required.
         @param {Function} callback - Callback function called when done, always with a true parameter. Required.
     */
     addPlatform: function(platform, callback) {
-        utils.log("addPlatform", utils.logLevel.debug);
+        utils.log("addPlatform " + platform, utils.logLevel.debug);
         var addPlatform = child_process.spawn(config.cordova_bin_path, ["platform", "add", platform], {cwd: this.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
         addPlatform.on("close", function(code) {
             if (code!==0) utils.log("Error adding platform", utils.logLevel.error);
@@ -285,38 +304,199 @@ exports.App.prototype = {
         app.addPlatform(platform, function(platformAdded) {
             // Do callback if platform has not been added
             if (!platformAdded) return callback(false);
+            var args = ["build", platform];
+            if (platform==="ios") {
+                args.push("--device");
+            }
             // Start compilation process
+            utils.log(config.cordova_bin_path + " " + args.join(" "), utils.logLevel.debug);
             utils.log("compiling...", utils.logLevel.debug);
-            var compile = child_process.spawn(config.cordova_bin_path, ["build"], {cwd: app.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
-    
+            var build = child_process.spawn(config.cordova_bin_path, args, {cwd: app.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
             
             // Add some listeners to compile function
-            compile.on("close", function(code) {
-                // Remove lock file
-                fs.unlink(app.getLockFilePath(platform));
-                
-                // Do false callback if we got an error
-                if (code!==0) {
-                    utils.log("Error compiling", utils.logLevel.error);
-                    return callback(false);
-                }
-                // Save info about compilation, and write manifesto to file
-                app.compiled = true;
-                app.compiledDate = new Date();
-                utils.log("writing manifesto", utils.logLevel.debug);
-                app.writeCompileManifesto(platform, function() {
-                    callback(true);
-                });
+            build.on("close", function(code) {
+                if (platform==="android") return app.compileFinished(platform, code, callback);
+                else if (platform==="ios") return app.postBuildIOS(platform, code, callback)
             });
-            compile.stderr.on("data", function (data) {
+            build.stderr.on("data", function (data) {
                 utils.log("stderr: " + data, utils.logLevel.error);
             });
-            compile.stdout.on("data", function (data) {
-                //utils.log("stdout: " + data, utils.logLevel.trace);
+            build.stdout.on("data", function (data) {
+                utils.log("stdout: " + data, utils.logLevel.trace);
             });
         });
     },
-    
+
+    XpostBuildIOS: function(platform, code, callback) {
+        // For iOS apps, we need another step.
+        /* 
+            http://stackoverflow.com/questions/11034133/building-ios-applications-using-xcodebuild-without-codesign
+            http://stackoverflow.com/questions/16445556/still-getting-cordova-cdvviewcontroller-h-file-not-found-error-in-xcode
+            http://www.thecave.com/2014/09/16/using-xcodebuild-to-export-a-ipa-from-an-archive/
+         */
+        var app = this;
+        var platformPath = app.getPlatformPath(platform);
+        utils.log("copying necessary files", utils.logLevel.debug);
+        utils.log(path.join(platformPath, "CordovaLib", "build") + " -> " + path.join(platformPath, "build", "."));
+        ncp(path.join(platformPath, "CordovaLib", "build"), path.join(platformPath, "build", "."), function(err) {
+            if (err) {
+                utils.log("error copy");
+                utils.log("error copy: " + err, utils.logLevel.error);
+            }
+
+            utils.log("copy ok", utils.logLevel.debug);
+            var args = [];
+            args.push("clean");
+            args.push("build");
+            args.push("-target");
+            args.push(app.name);
+            args.push("-sdk");
+            args.push(config.ios.sdk_path);
+            args.push("-configuration");
+            args.push("Release");
+            args.push("CODE_SIGN_IDENTITY=''");
+            args.push("CODE_SIGNING_REQUIRED=NO");
+            args.push(">> /dev/null"); // Kept getting error that stdout maxBuffer exceeded, so directing output to null. 
+            utils.log(platformPath);
+            utils.log("xcodebuild " + args.join(" "), utils.logLevel.debug);
+            // For some reason, spawn wouldn't work with these arguments. So using exec instead.
+            child_process.exec("xcodebuild " + args.join(" "), {cwd: platformPath, env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()}, function(err, stdout, stderr) {
+                var code = 0;
+                if (err) {
+                    utils.log("xcodebuild error: " + err, utils.logLevel.error);
+                    code = 1;
+                }
+                app.compileFinished(platform, code, callback);
+            });
+
+        });
+    },
+
+    postBuildIOS: function(platform, code, callback) {
+        // For iOS apps, we need another step.
+        /* 
+            http://stackoverflow.com/questions/11034133/building-ios-applications-using-xcodebuild-without-codesign
+            http://stackoverflow.com/questions/16445556/still-getting-cordova-cdvviewcontroller-h-file-not-found-error-in-xcode
+            http://www.thecave.com/2014/09/16/using-xcodebuild-to-export-a-ipa-from-an-archive/
+         */
+        var app = this;
+        var platformPath = app.getPlatformPath(platform);
+        utils.log("copying necessary files", utils.logLevel.debug);
+        utils.log(path.join(platformPath, "CordovaLib", "build") + " -> " + path.join(platformPath, "build", "."));
+        var copyOK = false;
+        ncp(path.join(platformPath, "CordovaLib", "build"), path.join(platformPath, "build", "."), function(err) {
+            if (err) {
+                utils.log("error copy", utils.logLevel.error);
+                utils.log("error copy: " + err, utils.logLevel.error);
+                return app.compileFinished(platform, 1, callback);
+            }
+            if (copyOK) return;
+            copyOK = true;
+            utils.log("copy ok", utils.logLevel.debug);
+            var execOptions = {cwd: platformPath, env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()};
+            
+            // 1. Perform a clean on the project
+            var args = [];
+            args.push("-alltargets")
+            args.push("-configuration");
+            args.push("Release");
+            args.push("clean");
+            //args.push(">> /dev/null"); // Kept getting error that stdout maxBuffer exceeded, so directing output to null. 
+            utils.log(platformPath);
+            utils.log("xcodebuild " + args.join(" "), utils.logLevel.debug);
+            var clean = child_process.spawn("xcodebuild", args, execOptions);
+            clean.on("close", function(code) {
+                utils.log("clean done");
+                if (code!==0) return app.compileFinished(platform, code, callback);
+                // 2. Export archive
+                var args = [];
+                args.push("-scheme");
+                args.push(app.name);
+                args.push("-archivePath");
+                args.push(app.name + ".xcarchive");
+                args.push("archive");
+                args.push("CODE_SIGN_IDENTITY=''");
+                args.push("CODE_SIGNING_REQUIRED=NO");
+                args.push(">> /dev/null"); // Kept getting error that stdout maxBuffer exceeded, so directing output to null. 
+                utils.log("xcodebuild " + args.join(" "), utils.logLevel.debug);
+                // For some reason, spawn wouldn't work with these arguments. So using exec instead.
+                child_process.exec("xcodebuild " + args.join(" "), execOptions, function(err, stdout, stderr) {
+                    var code = 0;
+                    if (err) {
+                        utils.log("xcodebuild error: " + stderr, utils.logLevel.error);
+                        code = 2;
+                        return app.compileFinished(platform, code, callback);
+                    }
+                    // 3. Finally, export to .ipa file
+                    var args = [];
+                    args.push("-exportArchive");
+                    args.push("-archivePath");
+                    args.push(app.name + ".xcarchive");
+                    args.push("-exportPath");
+                    args.push(app.name);
+                    args.push("-exportFormat");
+                    args.push("ipa");
+/*
+                    args.push("CODE_SIGN_IDENTITY=''");
+                    args.push("CODE_SIGNING_REQUIRED=NO");
+*/
+                    args.push("-exportProvisioningProfile");
+//                     args.push('"' + config.ios.provisioning_profile + '"');
+                    args.push(config.ios.provisioning_profile);
+                    //args.push(">> /dev/null"); // Kept getting error that stdout maxBuffer exceeded, so directing output to null. 
+                    utils.log("xcodebuild " + args.join(" "), utils.logLevel.debug);
+                    var ipa = child_process.spawn("xcodebuild", args, execOptions);
+                    ipa.on("close", function(code) {
+                        child_process.exec("rm -rf " + app.name + ".xcarchive", execOptions, function(err, stdout, stderr) {
+                            if (err) utils.log("error removing archive: " + str(err), utils.logLevel.error);
+                        });
+                        child_process.exec("mkdir out", execOptions, function(err, stdout, stderr) {
+                            if (err) utils.log("error making dir out: " + stderr, utils.logLevel.error);
+                            
+                            child_process.exec("mv *.ipa out/.", execOptions, function(err, stdout, stderr) {
+                                if (err) utils.log("error moving file: " + stderr, utils.logLevel.error);
+                            });
+                        });
+                        
+                        return app.compileFinished(platform, code, callback);
+                    });
+                    ipa.stderr.on("data", function (data) {
+                        utils.log("stderr: " + data, utils.logLevel.error);
+                    });
+                    ipa.stdout.on("data", function (data) {
+                        utils.log("stdout: " + data, utils.logLevel.trace);
+                    });
+                });
+            });
+            clean.stderr.on("data", function (data) {
+                utils.log("stderr: " + data, utils.logLevel.error);
+            });
+            clean.stdout.on("data", function (data) {
+                utils.log("stdout: " + data, utils.logLevel.trace);
+            });
+        });
+    },
+
+    compileFinished: function(platform, code, callback) {
+        var app = this;
+        // Remove lock file
+        fs.unlink(app.getLockFilePath(platform));
+        
+        // Do false callback if we got an error
+        if (code!==0) {
+            utils.log("Error compiling", utils.logLevel.error);
+            return callback(false);
+        }
+        // Save info about compilation, and write manifesto to file
+        app.compiled = true;
+        app.compiledDate = new Date();
+        utils.log("writing manifesto", utils.logLevel.debug);
+        app.writeCompileManifesto(platform, function() {
+            utils.log("written");
+            callback(true);
+        });
+    },
+
     /**
         Reads the compile manifesto file and stores the info in Object's attributes.
         @param {Function} callback - Called when done, or failed. Should accept 
@@ -366,12 +546,17 @@ exports.App.prototype = {
         var dirPath = app.getExecutableDirPath(platform);
         var extension = app.platform_exec_extensions[platform];
         var mime = app.platform_exec_mime_types[platform];
+        utils.log(extension);
+        utils.log(mime);
         fs.readdir(dirPath, function(err, files) {
             if (err) return callback(null);
             var execFile;
             for (var i=0, ii=files.length; i<ii; i++) {
+                utils.log(files[i]);
                 if (!files[i].endsWith(extension)) continue;
+                utils.log("yes!");
                 fs.readFile(path.join(dirPath, files[i]), function(err, data) {
+                    if (err) utils.log("read file error: " + err, utils.logLevel.error);
                     if (data) {
                         var file = data.toString();
                         return callback(file, app.getExecFileName(platform), mime);

@@ -174,10 +174,9 @@ exports.getConfig = function() {
 exports.getEnvironment = function(platform) {
     var env  = environment;
     if (platform) {
-        console.log(environment);
         env = exports.clone(environment);
-        for (key in config[platform] || {}) {
-            env[key] = config[platform][key];
+        for (key in config[platform].environment || {}) {
+            env[key] = config[platform].environment[key];
         }
     }
     return env;
