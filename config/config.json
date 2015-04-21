@@ -8,7 +8,9 @@
     "callback_server": "https://notworking.snappergrape.no",
     "log_level": "DEBUG",
     "os": "windows",
-    "environment": {},
+    "environment": {
+		"PATH": "$:C:\\Program Files\\GnuWin32\\bin\\"
+	},
     "android": {
         "environment": {
             "ANDROID_HOME": "/srv/mlab/android-sdk-linux/",
