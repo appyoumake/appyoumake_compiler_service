@@ -1,5 +1,5 @@
 /**
-    MLAB Compiler Service
+    #MLAB Compiler Service
     
     Consists of:
         app.js - This file. Starts the server and defines routes.
@@ -11,9 +11,12 @@
         node_modules/ - Node.js stores modules here. Don't touch.
     
     Usage:
-        pm2 start app.js
-        pm2 stop app.js
-        pm2 restart app.js
+        Run in console:
+        - node app.js
+        Serve as daemon:
+        - pm2 start app.js
+        - pm2 stop app.js
+        - pm2 restart app.js
         
         Then call API:
             GET <your server>/getAppStatus?
@@ -28,11 +31,17 @@
     xmldoc: https://www.npmjs.com/package/xmldoc
     log4js: https://github.com/nomiddlename/log4js-node
     PM2: https://github.com/Unitech/pm2
+    
     @author Author: Snapper Net Solutions
     @copyright Copyright (c) 2015
     @module Compiler Service
 
 */
+/*
+    Generate JSDoc:
+    node_modules/.bin/jsdoc *.js -d doc/ -c config/jsdoc.json
+*/
+
 var server;
 var restify = require("restify");
 
