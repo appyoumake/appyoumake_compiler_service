@@ -68,24 +68,29 @@ exports.setup = function() {
     // calls within the first couple of milliseconds after startup. So we 
     // don't bother with a callback in the setup phase.
     if (user!==environment.USER) {
-        // Unix/Linux/OSX
-        var getUid = child_process.spawn("id", ["-u", user], {env:environment});
-        getUid.stdout.on("data", function(data) {
-            uid = parseInt(data.toString());
-            exports.log("Running commands as " + user + ", " + uid, exports.logLevel.info, true);
-        });
-        getUid.stderr.on("data", function (data) {
-            exports.log("stderr: " + data, exports.logLevel.error);
-            uid = null;
-        });
-        var getGid = child_process.spawn("id", ["-g", user], {env:environment});
-        getGid.stdout.on("data", function(data) {
-            gid = parseInt(data.toString());
-        });
-        getGid.stderr.on("data", function (data) {
-            exports.log("stderr: " + data, exports.logLevel.error);
-            gid = null;
-        });
+		if (config.os==="windows") {
+			;
+		}
+		else {
+			// Unix/Linux/OSX
+			var getUid = child_process.spawn("id", ["-u", user], {env:environment});
+			getUid.stdout.on("data", function(data) {
+				uid = parseInt(data.toString());
+				exports.log("Running commands as " + user + ", " + uid, exports.logLevel.info, true);
+			});
+			getUid.stderr.on("data", function (data) {
+				exports.log("stderr: " + data, exports.logLevel.error);
+				uid = null;
+			});
+			var getGid = child_process.spawn("id", ["-g", user], {env:environment});
+			getGid.stdout.on("data", function(data) {
+				gid = parseInt(data.toString());
+			});
+			getGid.stderr.on("data", function (data) {
+				exports.log("stderr: " + data, exports.logLevel.error);
+				gid = null;
+			});
+		}
     }
     else {
         // If we are already running as the user specified in config, we unset 
