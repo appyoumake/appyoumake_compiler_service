@@ -252,44 +252,14 @@ exports.App.prototype = {
     */
     compile: function(platform, callback) {
         utils.log("compile", utils.logLevel.debug);
-        this.checkLockAndCompile(platform, 0, callback);
-    },
-    
-
-    /**
-        Checks if lock file is present for app/platform. If not, starts compilation. If it is, wait for a period, and try again. This can continue until a max time limit is reached.
-        @param {String} platform - Platform to compile for. Required.
-        @param {Number} timeElepased - Milliseconds since we first tried. Must be parameter for recursive use of this function. Optional.
-        @param {Function} callback - Called when compile is finished, or we have met our time limit and given up. Required.
-    */
-    checkLockAndCompile: function(platform, timeElapsed, callback) {
-        utils.log("checkLockAndCompile " + platform, utils.logLevel.debug);
         var app = this;
-        if (!timeElapsed) timeElapsed = 0;
-        // Check file
-        fs.stat(app.getLockFilePath(platform), function(err, stat) {
-            // File does not exist or is not a file. Start compilation.
-            if (err || !stat.isFile()) app.doCompile(platform, callback);
-            // Lock file exists.
-            else {
-                // Check if we have passed our timeout
-                utils.log("timeElapsed: " + timeElapsed, utils.logLevel.debug);
-                if (timeElapsed>=app.compile_check_max) {
-                    utils.log("giving up compile, took too long", utils.logLevel.error);
-                    callback(true);
-                }
-                // Otherwise, wait some time and try again
-                else {
-                    utils.log("wait for compile lock file to disappear", utils.logLevel.debug);
-                    setTimeout(function() { 
-                        timeElapsed += app.compile_check_interval;
-                        app.checkLockAndCompile(platform, timeElapsed, callback);
-                    }, app.compile_check_interval);
-                }
-            }
+        utils.checkFileAndDo(app.getLockFilePath(platform), app.compile_check_interval, app.compile_check_max, "notexists", function(success) {
+            if (!success) callback(true);
+            else app.doCompile(platform, callback);
         });
     },
     
+
     /**
         Compile the Cordova app. Writes a lock file on start, and deletes it when finished.
         @param {String} platform - Platform to compile for. Required.
@@ -327,156 +297,49 @@ exports.App.prototype = {
         });
     },
 
-    XpostBuildIOS: function(platform, code, callback) {
-        // For iOS apps, we need another step.
-        /* 
-            http://stackoverflow.com/questions/11034133/building-ios-applications-using-xcodebuild-without-codesign
-            http://stackoverflow.com/questions/16445556/still-getting-cordova-cdvviewcontroller-h-file-not-found-error-in-xcode
-            http://www.thecave.com/2014/09/16/using-xcodebuild-to-export-a-ipa-from-an-archive/
-         */
-        var app = this;
-        var platformPath = app.getPlatformPath(platform);
-        utils.log("copying necessary files", utils.logLevel.debug);
-        utils.log(path.join(platformPath, "CordovaLib", "build") + " -> " + path.join(platformPath, "build", "."));
-        ncp(path.join(platformPath, "CordovaLib", "build"), path.join(platformPath, "build", "."), function(err) {
-            if (err) {
-                utils.log("error copy");
-                utils.log("error copy: " + err, utils.logLevel.error);
-            }
 
-            utils.log("copy ok", utils.logLevel.debug);
-            var args = [];
-            args.push("clean");
-            args.push("build");
-            args.push("-target");
-            args.push(app.name);
-            args.push("-sdk");
-            args.push(config.ios.sdk_path);
-            args.push("-configuration");
-            args.push("Release");
-            args.push("CODE_SIGN_IDENTITY=''");
-            args.push("CODE_SIGNING_REQUIRED=NO");
-            args.push(">> /dev/null"); // Kept getting error that stdout maxBuffer exceeded, so directing output to null. 
-            utils.log(platformPath);
-            utils.log("xcodebuild " + args.join(" "), utils.logLevel.debug);
-            // For some reason, spawn wouldn't work with these arguments. So using exec instead.
-            child_process.exec("xcodebuild " + args.join(" "), {cwd: platformPath, env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()}, function(err, stdout, stderr) {
-                var code = 0;
-                if (err) {
-                    utils.log("xcodebuild error: " + err, utils.logLevel.error);
-                    code = 1;
-                }
-                app.compileFinished(platform, code, callback);
-            });
+    /**
+        Platform specific build/compile function for iOS, called post Cordova build. Most of the work is actually done in /bin/compileios.sh.
+        @param {String} platform - Platform to compile for. Required.
+        @param {Number} code - Return code from Cordova build process.
+        @param {Function} callback - Called when done, with the same parameters as this. Required.
 
-        });
-    },
-
+    */
     postBuildIOS: function(platform, code, callback) {
         // For iOS apps, we need another step.
-        /* 
-            http://stackoverflow.com/questions/11034133/building-ios-applications-using-xcodebuild-without-codesign
-            http://stackoverflow.com/questions/16445556/still-getting-cordova-cdvviewcontroller-h-file-not-found-error-in-xcode
-            http://www.thecave.com/2014/09/16/using-xcodebuild-to-export-a-ipa-from-an-archive/
-         */
         var app = this;
         var platformPath = app.getPlatformPath(platform);
-        utils.log("copying necessary files", utils.logLevel.debug);
-        utils.log(path.join(platformPath, "CordovaLib", "build") + " -> " + path.join(platformPath, "build", "."));
-        var copyOK = false;
-        ncp(path.join(platformPath, "CordovaLib", "build"), path.join(platformPath, "build", "."), function(err) {
-            if (err) {
-                utils.log("error copy", utils.logLevel.error);
-                utils.log("error copy: " + err, utils.logLevel.error);
-                return app.compileFinished(platform, 1, callback);
-            }
-            if (copyOK) return;
-            copyOK = true;
-            utils.log("copy ok", utils.logLevel.debug);
-            var execOptions = {cwd: platformPath, env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()};
-            
-            // 1. Perform a clean on the project
-            var args = [];
-            args.push("-alltargets")
-            args.push("-configuration");
-            args.push("Release");
-            args.push("clean");
-            //args.push(">> /dev/null"); // Kept getting error that stdout maxBuffer exceeded, so directing output to null. 
-            utils.log(platformPath);
-            utils.log("xcodebuild " + args.join(" "), utils.logLevel.debug);
-            var clean = child_process.spawn("xcodebuild", args, execOptions);
-            clean.on("close", function(code) {
-                utils.log("clean done");
-                if (code!==0) return app.compileFinished(platform, code, callback);
-                // 2. Export archive
-                var args = [];
-                args.push("-scheme");
-                args.push(app.name);
-                args.push("-archivePath");
-                args.push(app.name + ".xcarchive");
-                args.push("archive");
-                args.push("CODE_SIGN_IDENTITY=''");
-                args.push("CODE_SIGNING_REQUIRED=NO");
-                args.push(">> /dev/null"); // Kept getting error that stdout maxBuffer exceeded, so directing output to null. 
-                utils.log("xcodebuild " + args.join(" "), utils.logLevel.debug);
-                // For some reason, spawn wouldn't work with these arguments. So using exec instead.
-                child_process.exec("xcodebuild " + args.join(" "), execOptions, function(err, stdout, stderr) {
-                    var code = 0;
-                    if (err) {
-                        utils.log("xcodebuild error: " + stderr, utils.logLevel.error);
-                        code = 2;
-                        return app.compileFinished(platform, code, callback);
-                    }
-                    // 3. Finally, export to .ipa file
-                    var args = [];
-                    args.push("-exportArchive");
-                    args.push("-archivePath");
-                    args.push(app.name + ".xcarchive");
-                    args.push("-exportPath");
-                    args.push(app.name);
-                    args.push("-exportFormat");
-                    args.push("ipa");
-/*
-                    args.push("CODE_SIGN_IDENTITY=''");
-                    args.push("CODE_SIGNING_REQUIRED=NO");
-*/
-                    args.push("-exportProvisioningProfile");
-//                     args.push('"' + config.ios.provisioning_profile + '"');
-                    args.push(config.ios.provisioning_profile);
-                    //args.push(">> /dev/null"); // Kept getting error that stdout maxBuffer exceeded, so directing output to null. 
-                    utils.log("xcodebuild " + args.join(" "), utils.logLevel.debug);
-                    var ipa = child_process.spawn("xcodebuild", args, execOptions);
-                    ipa.on("close", function(code) {
-                        child_process.exec("rm -rf " + app.name + ".xcarchive", execOptions, function(err, stdout, stderr) {
-                            if (err) utils.log("error removing archive: " + str(err), utils.logLevel.error);
-                        });
-                        child_process.exec("mkdir out", execOptions, function(err, stdout, stderr) {
-                            if (err) utils.log("error making dir out: " + stderr, utils.logLevel.error);
-                            
-                            child_process.exec("mv *.ipa out/.", execOptions, function(err, stdout, stderr) {
-                                if (err) utils.log("error moving file: " + stderr, utils.logLevel.error);
-                            });
-                        });
-                        
-                        return app.compileFinished(platform, code, callback);
-                    });
-                    ipa.stderr.on("data", function (data) {
-                        utils.log("stderr: " + data, utils.logLevel.error);
-                    });
-                    ipa.stdout.on("data", function (data) {
-                        utils.log("stdout: " + data, utils.logLevel.trace);
-                    });
+        var execOptions = {env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()};
+        utils.log("Starting compile process for " + app.name, utils.logLevel.debug);
+        utils.log("./bin/compileios.sh " + [platformPath, "'" + app.name + "'", "'" + config.ios.provisioning_profile + "'"].join(" "))
+        var compile = child_process.spawn("./bin/compileios.sh", [platformPath, app.name, config.ios.provisioning_profile], execOptions);
+        compile.on("close", function(code) {
+            utils.log("compile: " + code);
+            if (code!==0) return app.compileFinished(platform, code, callback);
+            execOptions["cwd"] = platformPath;
+            child_process.exec("mkdir out", execOptions, function(err, stdout, stderr) {
+                if (err) utils.log("error making dir out: " + stderr, utils.logLevel.error);
+                
+                child_process.exec("mv *.ipa out/.", execOptions, function(err, stdout, stderr) {
+                    if (err) utils.log("error moving file: " + stderr, utils.logLevel.error);
+                    return app.compileFinished(platform, code, callback);
                 });
             });
-            clean.stderr.on("data", function (data) {
-                utils.log("stderr: " + data, utils.logLevel.error);
-            });
-            clean.stdout.on("data", function (data) {
-                utils.log("stdout: " + data, utils.logLevel.trace);
-            });
+        });
+        compile.stderr.on("data", function (data) {
+            utils.log("stderr: " + data, utils.logLevel.error);
+        });
+        compile.stdout.on("data", function (data) {
+            utils.log("stdout: " + data, utils.logLevel.trace);
         });
     },
 
+    /**
+        Function called when build and compile operations are finished. Removes lock file, writes compile manifesto, and calls callback.
+        @param {String} platform - Platform to compile for. Required.
+        @param {Number} code - Return code from Cordova build process.
+        @param {Function} callback - Called when done, with a single boolean parameter. Required.
+    */
     compileFinished: function(platform, code, callback) {
         var app = this;
         // Remove lock file
@@ -492,7 +355,6 @@ exports.App.prototype = {
         app.compiledDate = new Date();
         utils.log("writing manifesto", utils.logLevel.debug);
         app.writeCompileManifesto(platform, function() {
-            utils.log("written");
             callback(true);
         });
     },

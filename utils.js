@@ -222,6 +222,46 @@ exports.clone = function(ob,deep) {
   return objectClone;
 }
 
+/**
+    Check for a file's existence and perform callback. Can be used both for waiting for a lock file to disappear, and for waiting until a certain file has been created.
+    @param {String} filePath - Path to file. Required
+    @param {Number} interval - Interval between each file check, in ms. Optional. Default 1000.
+    @param {Number} maxTime - The maximum time we try until we give up, in ms. Optiona. Default 10000.
+    @param {String} criteria - What the success criteria is. "notexists": Wait until file in question disappears. "exists": Wait until file in question appears. Optional. Default "notexists".
+    @param {Number} timeElapsed - How much time has passed since we started. Used for internal, recursive calls. Optional.
+*/
+exports.checkFileAndDo = function(filePath, interval, maxTime, criteria, callback, timeElapsed) {
+    utils.log("checkFileAndDo " + filePath, utils.logLevel.debug);
+    if (!interval) interval = 1000; // One second
+    if (!maxTime) maxTime = 10000; // Ten seconds
+    if (!criteria) criteria = "notexists";
+    if (!timeElapsed) timeElapsed = 0;
+    // Check file
+    fs.stat(filePath, function(err, stat) {
+        // Criteria is met. Do the thing.
+        if ((criteria==="notexists" && err) || (criteria==="exists" && !err)) callback(true);
+        // Lock file exists.
+        else {
+            // Check if we have passed our timeout
+            utils.log("timeElapsed: " + timeElapsed, utils.logLevel.debug);
+            if (timeElapsed>=maxTime) {
+                utils.log("giving up, took too long", utils.logLevel.error);
+                callback(false);
+            }
+            // Otherwise, wait some time and try again
+            else {
+                if (criteria==="notexists") utils.log("wait for lock file to disappear", utils.logLevel.debug);
+                if (criteria==="exists") utils.log("wait for file to appear", utils.logLevel.debug);
+                setTimeout(function() { 
+                    timeElapsed += interval;
+                    exports.checkFileAndDo(filePath, interval, maxTime, criteria, callback, timeElapsed);
+                }, interval);
+            }
+        }
+    });
+}
+
+var utils = exports;
 
 /**
     Helper function for check the ends of strings. Since this is added to 
