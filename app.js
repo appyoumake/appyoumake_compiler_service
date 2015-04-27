@@ -1,6 +1,8 @@
 /**
     #MLAB Compiler Service
     
+    REST API for compiling Cordova apps built with MLAB. Currently supports compiling for Android and iOS.
+    
     Consists of:
         app.js - This file. Starts the server and defines routes.
         functions.js - Main function module, which binds everything together
