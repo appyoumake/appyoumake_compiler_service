@@ -2,15 +2,13 @@
   "development": {
     "port_number": 80,
     "cordova_bin_path": "cordova",
-    "cordova_apps_path": "C:\\Users\\morte_000\\MLAB\\mlabcompiler\\apps",
+    "cordova_apps_path": "/srv/mlab/compilerservice/mlabcompiler/apps",
     "cordova_user": "mortenkrane",
     "key": "RLjYNDVQEh6fA*;zthtftc9m",
     "callback_server": "https://notworking.snappergrape.no",
     "log_level": "DEBUG",
-    "os": "windows",
-    "environment": {
-		"PATH": "$:C:\\Program Files\\GnuWin32\\bin\\"
-	},
+    "os": "linux",
+    "environment": {},
     "android": {
         "environment": {
             "ANDROID_HOME": "/srv/mlab/android-sdk-linux/",

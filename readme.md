@@ -17,9 +17,6 @@ All platforms:
     - Code signing identity and provisioning profile set up (name of provisioning profile goes into config file)
 - Prerequisistes for compiling for Android
     - Android SDK installed (path goes into config file)
-- Prerequisites for compiling for Windows
-    - Must be done on Windows
-    - Windows phone SDK (http://dev.windows.com/en-us/develop/download-phone-sdk)
 
 
 Run in console:

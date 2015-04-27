@@ -65,8 +65,7 @@ exports.App = function(id, version, name, callback) {
     // File extensions for execeutable files
     this.platform_exec_extensions = {
         "android": "apk",
-        "ios": "ipa",
-		"windows": "xap"
+        "ios": "ipa"
     };
     // Mime types for executable files
     this.platform_exec_mime_types = {
@@ -279,10 +278,6 @@ exports.App.prototype = {
             if (platform==="ios") {
                 args.push("--device");
             }
-			else if (platform==="windows") {
-				args.push("--release");
-				args.push("--device");
-			}
             // Start compilation process
             utils.log(config.cordova_bin_path + " " + args.join(" "), utils.logLevel.debug);
             utils.log("compiling...", utils.logLevel.debug);
