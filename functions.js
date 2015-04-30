@@ -43,6 +43,7 @@ var config = utils.getConfig();
         passphrase: String. Shared secret to validate request. Required.
         app_uid: String. ID of app. Optional.
         app_version: String. Version number of app. Optional.
+        platform: String. Platform we are interested in. Optional.
     If neither request params are given, will return all apps. If app_uid is given, but not app_version, will return all version for that app. If app_uid and app_version is given, will return that specific app.
     Sends response as JSON on the form:
     {
@@ -63,7 +64,8 @@ exports.getAppStatus = function(req, res, next) {
     utils.log("getAppStatus", utils.logLevel.debug);
     var paramNames = [
         {"name": "app_uid", "required": false},
-        {"name": "app_version", "required": false}
+        {"name": "app_version", "required": false},
+        {"name": "platform", "required": false}
     ]
     var statusParams = prepareRequest(req, paramNames);
     var status = statusParams[0];
@@ -113,15 +115,15 @@ exports.createApp = function(req, res, next) {
         Callback function for when createApp finishes (succesful or not).
         @param {App object} app - Optional.
     */
-    function createAppFinished(app, app_uid) {
+    function createAppFinished(app, appId, appVersion) {
         utils.log("createAppFinished", utils.logLevel.debug);
         // handle error situation, when there is no app, create failed
         if (app) {
             app.getChecksum(function(checksum) {
-                performCallback("createApp", {checksum: checksum, app_uid: app.id});
+                performCallback("createApp", {checksum: checksum, app_uid: app.id, app_version: app.version});
             });
         }
-        else performCallback("createApp", {checksum: null, app_uid: app_uid});
+        else performCallback("createApp", {checksum: null, app_uid: appId, app_version: appVersion});
     };
 
     var paramNames = [
@@ -141,7 +143,7 @@ exports.createApp = function(req, res, next) {
             utils.log("no app", utils.logLevel.debug);
             createNewApp(params.app_uid, params.app_version, params.config_xml, createAppFinished);
         }
-        else createAppFinished(apps[0], params.app_uid);
+        else createAppFinished(apps[0], params.app_uid, params.app_version);
     });
     res.send(200, true);
     return next();
@@ -404,14 +406,14 @@ function createNewApp(appUid, appVersion, configXML, callback) {
 				if (code!==0) {
 					// Something went wrong
 					utils.log("Cordova create: exit: " + code, utils.logLevel.error);
-					return callback(null, appUid);
+					return callback(null, appUid, appVersion);
 				}
 				// Create was successful, now fetch the app, write the config.xml file, 
 				// and do callback.
 				getApps(appUid, appVersion, function(apps) {
 					var app = apps[0];
 					app.writeConfig(configXML, function() {
-						callback(app, appUid);
+						callback(app, appUid, appVersion);
 					});
 				});
 			});

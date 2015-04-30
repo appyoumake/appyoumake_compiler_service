@@ -1,5 +1,4 @@
 {
-  "development": {
     "port_number": 80,
     "cordova_bin_path": "cordova",
     "cordova_apps_path": "/srv/mlab/compilerservice/mlabcompiler/apps",
@@ -18,23 +17,5 @@
     "ios": {
         "provisioning_profile": "MLAB dev"
     }
-  },
-  "production": {
-    "port_number": 8283,
-    "cordova_bin_path": "cordova",
-    "cordova_apps_path": "/srv/mlab/compilerservice/mlabcompiler/apps",
-    "cordova_user": "morten",
-    "key": "RLjYNDVQEh6fA*;zthtftc9m",
-    "callback_server": "https://notworking.snappergrape.no",
-    "log_level": "ERROR",
-    "os": "linux",
-    "environment": {},
-    "android": {
-        "environment": {
-            "ANDROID_HOME": "/srv/mlab/android-sdk-linux/",
-            "JAVA_HOME": "/usr/lib/jvm/java-7-openjdk-amd64/jre/"
-        }
-    }
-  }
 }
 

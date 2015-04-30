@@ -7,10 +7,8 @@
     @module Utils
 */
 
-// Get config. To switch between development and production modes, set the 
-// environment variable "NODE_ENV" to "production" or "development".
-var env = process.env.NODE_ENV || "development";
-var config = require(__dirname + "/config/config.json")[env];
+// Get config.
+var config = require(__dirname + "/config/config.json");
 
 // Add requirements
 var fs = require("fs");
