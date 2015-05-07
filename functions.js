@@ -47,14 +47,14 @@ var config = utils.getConfig();
     If neither request params are given, will return all apps. If app_uid is given, but not app_version, will return all version for that app. If app_uid and app_version is given, will return that specific app.
     Sends response as JSON on the form:
     {
-        <app id, string>: [
-            {
-                app_version: <number>,
-                compiled: <boolean>,
-                compiled_date: <date or null>
-            }
-        ],
-        ...
+        <app id, string>: {
+            <app_version, string>: {
+                <platform, string>: {
+                    compiled: <boolean>,
+                    compiled_date: <date or null>
+                }, (..)
+            }, (..)
+        }, (..)
     }    
     @param {Object} req - Restify request object
     @param {Object} res - Restify response object
@@ -78,12 +78,16 @@ exports.getAppStatus = function(req, res, next) {
         var appsObj = {};
         for (var i=0, ii=apps.length; i<ii; i++) {
             var app = apps[i];
-            if (!(app.id in appsObj)) appsObj[app.id] = [];
-            appsObj[app.id].push({
-                app_version: app.version, 
-                compiled: app.compiled, 
-                compiled_date: app.compiledDate
-            });
+            if (!(app.id in appsObj)) appsObj[app.id] = {};
+            var appObj = {};
+            var compiledInfo = app.getCompiledInfo(params.platform);
+            for (platform in compiledInfo) {
+                appObj[platform] = {
+                    compiled: compiledInfo[platform].compiled,
+                    compiled_date: compiledInfo[platform].compiledDate
+                };
+            }
+            appsObj[app.id][app.version] = appObj;
         }
         
         res.send(200, appsObj);

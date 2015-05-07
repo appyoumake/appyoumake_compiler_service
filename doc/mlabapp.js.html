@@ -41,8 +41,6 @@ var fs = require("fs");
 var path = require("path");
 var child_process = require("child_process");
 var xmldoc = require("xmldoc");
-var ncp = require('ncp').ncp;
-ncp.limit = 16;
 
 // Add Mlab modules
 var utils = require('./utils.js');
@@ -64,25 +62,22 @@ exports.App = function(id, version, name, callback) {
     this.version = version;
     this.name = name;
     if (!this.name) this.name = this.getNameFromConfig();
-/*
-    // Not sure if we are handling the multiple platform scenario correctly.
+
     this.platforms = {};
     for (var i=0, ii=config.platforms.length; i&lt;ii; i++) {
         this.platforms[config.platforms[i]] = {
             compiled: false,
             compiledDate: null,
-            checksum: null,
-            checksumDate: null,
-            checksumDate: null,
             checksumCompiled: null
         };
     }
-*/
-    this.compiled = false;
-    this.compiledDate = null;
     this.checksum = null;
     this.checksumDate = null;
+/*
+    this.compiled = false;
+    this.compiledDate = null;
     this.checksumCompiled = null;
+*/
     
     
     // If a compilation process is already in progress, how long should we wait 
@@ -206,8 +201,10 @@ exports.App.prototype = {
             checksum.stdout.on("data", function(data) {
                 data = data.toString();
                 // The return value contains the file path, etc. Remove this.
+                utils.log("checksum output: "+data);
                 data = data.split(" ");
-                data = data[data.length-1];
+                if (config.os==="linux") data = data[0];
+                else if (config.os==="osx") data = data[data.length-1];
                 data = data.trim();
                 // Store the result
                 app.checksum = data;
@@ -269,7 +266,11 @@ exports.App.prototype = {
         utils.log("checkCompiled", utils.logLevel.debug);
         var app = this;
         app.readCompileManifesto(function(read) {
-            callback(read &amp;&amp; app.compiled &amp;&amp; (!checksum || checksum==app.checksumCompiled));
+            utils.log(platform);
+            utils.log("read: " + read);
+            utils.log(app);
+            utils.log(app.platforms);
+            callback(read &amp;&amp; app.platforms[platform].compiled &amp;&amp; (!checksum || checksum===app.platforms[platform].checksumCompiled));
         });
     },
     
@@ -379,18 +380,18 @@ exports.App.prototype = {
             return callback(false);
         }
         // Save info about compilation, and write manifesto to file
-        app.compiled = true;
-        app.compiledDate = new Date();
+        app.platforms[platform].compiled = true;
+        app.platforms[platform].compiledDate = new Date();
+        app.platforms[platform].checksumCompiled = app.checksum;
         utils.log("writing manifesto", utils.logLevel.debug);
-        app.writeCompileManifesto(platform, function() {
+        app.writeCompileManifesto(function() {
             callback(true);
         });
     },
 
     /**
         Reads the compile manifesto file and stores the info in Object's attributes.
-        @param {Function} callback - Called when done, or failed. Should accept 
-            single boolean parameter indicating success or failure. Required.
+        @param {Function} callback - Called when done, or failed. Should accept single boolean parameter indicating success or failure. Required.
     */
     readCompileManifesto: function(callback) {
         var app = this;
@@ -400,9 +401,7 @@ exports.App.prototype = {
                 data = data.toString();
                 var manifesto = JSON.parse(data);
                 if (manifesto.id===app.id &amp;&amp; manifesto.version===app.version) {
-                    app.compiled = manifesto.compiled;
-                    app.compiledDate = manifesto.compiledDate;
-                    app.checksumCompiled = manifesto.checksum;
+                    app.platforms = manifesto.platforms;
                 }
                 callback(true);
             }
@@ -412,15 +411,33 @@ exports.App.prototype = {
 
     /**
         Writes a new compile manifesto file based on info stored in Object. Overwrites any existing file.
-        @param {String} platform - NOT USED for now.
         @param {Function} callback - Called when done, with true as only parameter.
     */
-    writeCompileManifesto: function(platform, callback) {
+    writeCompileManifesto: function(callback) {
         var filePath = this.getManifestoFilePath();
         var manifesto = this.output();
         fs.writeFile(filePath, JSON.stringify(manifesto), function(err) {
             callback(true);
         });
+    },
+    
+    /**
+        Gets the compile info, either for specific platform, or for all platforms.
+        @param {String} platform - Platform we want info for. If omitted, will return info for all defined (in config) platforms.
+        @returns {Object} Platform compile info
+    */
+    getCompiledInfo: function(platform) {
+        var compiledInfo = {};
+        if (platform) {
+            if (platform in this.platforms) {
+                compiledInfo = {};
+                compiledInfo[platform] = this.platforms[platform];
+            }
+        }
+        else {
+            compiledInfo = this.platforms;
+        }
+        return compiledInfo;
     },
     
     /**
@@ -501,15 +518,13 @@ exports.App.prototype = {
         @returns {Object}
     */
     output: function() {
-        return {
+        var ob = {
             id: this.id, 
             version: this.version, 
-            name: this.name, 
-            compiled: this.compiled, 
-            compiledDate: this.compiledDate,
-            checksum: this.checksum,
-            checksumDate: this.checksumDate
-        }
+            name: this.name,
+            platforms: this.getCompiledInfo()
+        };
+        return ob;
     },
     
     /**
@@ -538,7 +553,7 @@ exports.App.prototype = {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Mon Apr 27 2015 10:55:08 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Thu May 07 2015 16:41:14 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
