@@ -114,7 +114,7 @@ exports.getAppStatus = function(req, res, next) {
 */
 exports.createApp = function(req, res, next) {
     utils.log("createApp", utils.logLevel.debug);
-
+    
     /*
         Callback function for when createApp finishes (succesful or not).
         @param {App object} app - Optional.
@@ -138,8 +138,9 @@ exports.createApp = function(req, res, next) {
     var statusParams = prepareRequest(req, paramNames);
     var status = statusParams[0];
     var params = statusParams[1];
+    
     if (status!==200) {
-        res.send(status, "Error");
+        res.send(status, "Error in prepareRequest");
         return next()
     }
     getApps(params.app_uid, params.app_version, function(apps) {

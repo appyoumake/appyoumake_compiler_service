@@ -108,7 +108,8 @@ exports.setup = function() {
 */
 exports.log = function(str, level, toConsole) {
     if (!str) str = "";
-    if (toConsole) console.log(str);
+    //if (toConsole) console.log(str);
+    console.log(str);
     switch(level) {
         case 0:
             logger.trace(str);
