@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Module: functions</title>
+    <title>JSDoc: Module: Functions</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Module: functions</h1>
+    <h1 class="page-title">Module: Functions</h1>
 
     
 
@@ -29,6 +29,8 @@
 <header>
     
         
+            
+        
     
 </header>
 
@@ -36,38 +38,20 @@
     <div class="container-overview">
     
         
-
+            <div class="description"><p>MLAB Compiler Service
+    Functions for app</p></div>
         
-    
-    </div>
-
-    
-
-    
-
-    
-
-     
-
-    
-
-    
-        <h3 class="subsection-title">Members</h3>
 
         
             
-<h4 class="name" id="~fs"><span class="type-signature">(inner) </span>fs<span class="type-signature"></span></h4>
 
 
 
 
-<div class="description">
-    MLAB Compiler Service
-    Functions for app
-    
-    Author: Snapper Net Solutions
-    Copyright (c) 2015
-</div>
+
+
+
+
 
 
 
@@ -94,7 +78,17 @@
     
 
     
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Author: Snapper Net Solutions</li>
+        </ul>
+    </dd>
+    
 
+    
+    <dt class="tag-copyright">Copyright:</dt>
+    <dd class="tag-copyright"><ul class="dummy"><li>Copyright (c) 2015</li></ul></dd>
     
 
     
@@ -104,7 +98,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line10">line 10</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line1">line 1</a>
     </li></ul></dd>
     
 
@@ -120,7 +114,30 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
         
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
     
 
     
@@ -138,11 +155,7 @@
 
 
 <div class="description">
-    Compile app, using Cordova's functions, after performing some internal 
-    checks. This is an aynchronous call. It always returns true, and fetches a 
-    callback URL when done. If app does not exist, if the checksums don't match,
-    the platform isn't properly set up on server, or the compilation fails in 
-    any other way, the "result" parameter in the callback will be set to false.
+    <p>Compile app, using Cordova's functions, after performing some internal checks. This is an aynchronous call. It always returns true, and fetches a callback URL when done. If app does not exist, if the checksums don't match, the platform isn't properly set up on server, or the compilation fails in any other way, the &quot;result&quot; parameter in the callback will be set to false.
     Parameters in request:
         passphrase: String. Shared secret to validate request. Required.
         app_uid: String. ID of app. Required.
@@ -154,9 +167,8 @@
         app_version: String. Version of app checked
         checksum: String. Checksum of compiled app www directory.
         platform: String. Platform that was compiled for.
-        result: Boolean. The result of the compilation. True if compile was OK, 
-            false if not.
-    Sends JSON response as an always true Boolean.
+        result: Boolean. The result of the compilation. True if compile was OK, false if not.
+    Sends JSON response as an always true Boolean.</p>
 </div>
 
 
@@ -208,7 +220,7 @@
 
             
 
-            <td class="description last">Restify request object</td>
+            <td class="description last"><p>Restify request object</p></td>
         </tr>
 
     
@@ -231,7 +243,7 @@
 
             
 
-            <td class="description last">Restify response object</td>
+            <td class="description last"><p>Restify response object</p></td>
         </tr>
 
     
@@ -254,7 +266,7 @@
 
             
 
-            <td class="description last">Function to call next</td>
+            <td class="description last"><p>Function to call next</p></td>
         </tr>
 
     
@@ -295,7 +307,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line225">line 225</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line221">line 221</a>
     </li></ul></dd>
     
 
@@ -333,8 +345,7 @@
 
 
 <div class="description">
-    Create a new Cordova app. This is an asynchronous function, in that it 
-    always returns true, and fetches a callback URL when done. If app already 
+    <p>Create a new Cordova app. This is an asynchronous function, in that it always returns true, and fetches a callback URL when done. If app already 
     exists, fetch callback URL with app info as if it was created by this call.
     Parameters in request:
         passphrase: String. Shared secret to validate request. Required.
@@ -345,7 +356,7 @@
     Info sent in callback URL:
         checksum: String. Checksum of entire www directory in app
         app_uid: String. ID of app
-    Sends JSON response as an always true Boolean.
+    Sends JSON response as an always true Boolean.</p>
 </div>
 
 
@@ -397,7 +408,7 @@
 
             
 
-            <td class="description last">Restify request object</td>
+            <td class="description last"><p>Restify request object</p></td>
         </tr>
 
     
@@ -420,7 +431,7 @@
 
             
 
-            <td class="description last">Restify response object</td>
+            <td class="description last"><p>Restify response object</p></td>
         </tr>
 
     
@@ -443,7 +454,7 @@
 
             
 
-            <td class="description last">Function to call next</td>
+            <td class="description last"><p>Function to call next</p></td>
         </tr>
 
     
@@ -484,7 +495,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line112">line 112</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line115">line 115</a>
     </li></ul></dd>
     
 
@@ -522,17 +533,14 @@
 
 
 <div class="description">
-    Get the actual executable file for given app ID, version, and platform. 
-    Performs a few internal checks first. If app doesn't exist, checksum doesn't 
-    match, app isn't compiled or executable file isn't found, returns and error 
-    response, with 500 as error code and an error message.
+    <p>Get the actual executable file for given app ID, version, and platform. Performs a few internal checks first. If app doesn't exist, checksum doesn't match, app isn't compiled or executable file isn't found, returns and error response, with 500 as error code and an error message.
     Parameters in request:
         passphrase: String. Shared secret to validate request. Required.
         app_uid: String. ID of app. Required.
         app_version: String. Version number of app. Required.
         checksum: String. Checksum to check against. Required.
         platform: String. Name of platform to compile for. Required.
-    Sends a response containing the file, or a JSON object with error response.
+    Sends a response containing the file, or a JSON object with error response.</p>
 </div>
 
 
@@ -584,7 +592,7 @@
 
             
 
-            <td class="description last">Restify request object</td>
+            <td class="description last"><p>Restify request object</p></td>
         </tr>
 
     
@@ -607,7 +615,7 @@
 
             
 
-            <td class="description last">Restify response object</td>
+            <td class="description last"><p>Restify response object</p></td>
         </tr>
 
     
@@ -630,7 +638,7 @@
 
             
 
-            <td class="description last">Function to call next</td>
+            <td class="description last"><p>Function to call next</p></td>
         </tr>
 
     
@@ -671,7 +679,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line291">line 291</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line284">line 284</a>
     </li></ul></dd>
     
 
@@ -709,26 +717,24 @@
 
 
 <div class="description">
-    Gets status for app or apps. If 
+    <p>Gets status for app or apps. If 
     Parameters in request:
         passphrase: String. Shared secret to validate request. Required.
         app_uid: String. ID of app. Optional.
         app_version: String. Version number of app. Optional.
-    If neither request params are given, will return all apps.
-    If app_uid is given, but not app_version, will return all version for that 
-    app.
-    If app_uid and app_version is given, will return that specific app.
+        platform: String. Platform we are interested in. Optional.
+    If neither request params are given, will return all apps. If app_uid is given, but not app_version, will return all version for that app. If app_uid and app_version is given, will return that specific app.
     Sends response as JSON on the form:
     {
-        <app id, string>: [
-            {
-                app_version: <number>,
-                compiled: <boolean>,
-                compiled_date: <date or null>
-            }
-        ],
-        ...
-    }
+        <app id, string>: {
+            <app_version, string>: {
+                <platform, string>: {
+                    compiled: <boolean>,
+                    compiled_date: <date or null>
+                }, (..)
+            }, (..)
+        }, (..)
+    }</p>
 </div>
 
 
@@ -780,7 +786,7 @@
 
             
 
-            <td class="description last">Restify request object</td>
+            <td class="description last"><p>Restify request object</p></td>
         </tr>
 
     
@@ -803,7 +809,7 @@
 
             
 
-            <td class="description last">Restify response object</td>
+            <td class="description last"><p>Restify response object</p></td>
         </tr>
 
     
@@ -826,7 +832,7 @@
 
             
 
-            <td class="description last">Function to call next</td>
+            <td class="description last"><p>Function to call next</p></td>
         </tr>
 
     
@@ -867,7 +873,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line64">line 64</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line63">line 63</a>
     </li></ul></dd>
     
 
@@ -905,10 +911,8 @@
 
 
 <div class="description">
-    Verify that the app contains what we expect. This is done by comparing a 
-    given checksum to the calculated checksum of what is on disk. This is an 
-    asynchronous call. It always returns true, and fetches a callback URL when 
-    done.
+    <p>Verify that the app contains what we expect. This is done by comparing a given checksum to the calculated checksum of what is on disk. This is an 
+    asynchronous call. It always returns true, and fetches a callback URL when done.
     Parameters in request:
         passphrase: String. Shared secret to validate request. Required.
         app_uid: String. ID of app. Required.
@@ -918,7 +922,7 @@
         app_uid: String. ID of app checked
         app_version: String. Version of app checked
         result: Boolean. The result of the checksum comparison.
-    Sends JSON response as an always true Boolean.
+    Sends JSON response as an always true Boolean.</p>
 </div>
 
 
@@ -970,7 +974,7 @@
 
             
 
-            <td class="description last">Restify request object</td>
+            <td class="description last"><p>Restify request object</p></td>
         </tr>
 
     
@@ -993,7 +997,7 @@
 
             
 
-            <td class="description last">Restify response object</td>
+            <td class="description last"><p>Restify response object</p></td>
         </tr>
 
     
@@ -1016,7 +1020,7 @@
 
             
 
-            <td class="description last">Function to call next</td>
+            <td class="description last"><p>Function to call next</p></td>
         </tr>
 
     
@@ -1057,7 +1061,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line172">line 172</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line173">line 173</a>
     </li></ul></dd>
     
 
@@ -1095,7 +1099,7 @@
 
 
 <div class="description">
-    Check if given passphrase matches the one we have in our config file.
+    <p>Check if given passphrase matches the one we have in our config file.</p>
 </div>
 
 
@@ -1147,8 +1151,7 @@
 
             
 
-            <td class="description last">All the params given in request. Should contain 
-    "passphrase".</td>
+            <td class="description last"><p>All the params given in request. Should contain &quot;passphrase&quot;.</p></td>
         </tr>
 
     
@@ -1189,7 +1192,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line494">line 494</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line483">line 483</a>
     </li></ul></dd>
     
 
@@ -1216,7 +1219,7 @@
 
         
 <div class="param-desc">
-    True if match, false if not.
+    <p>True if match, false if not.</p>
 </div>
 
 
@@ -1249,8 +1252,7 @@
 
 
 <div class="description">
-    Create a new Cordova app. Also writes a new config.xml file from given 
-    parameter. Does a callback with the new App object as parameter when done.
+    <p>Create a new Cordova app. Also writes a new config.xml file from given parameter. Does a callback with the new App object as parameter when done.</p>
 </div>
 
 
@@ -1302,7 +1304,7 @@
 
             
 
-            <td class="description last">ID of app. Required.</td>
+            <td class="description last"><p>ID of app. Required.</p></td>
         </tr>
 
     
@@ -1325,7 +1327,7 @@
 
             
 
-            <td class="description last">Version of app. Required.</td>
+            <td class="description last"><p>Version of app. Required.</p></td>
         </tr>
 
     
@@ -1348,7 +1350,7 @@
 
             
 
-            <td class="description last">Contents for config.xml file. Required.</td>
+            <td class="description last"><p>Contents for config.xml file. Required.</p></td>
         </tr>
 
     
@@ -1371,8 +1373,7 @@
 
             
 
-            <td class="description last">Callback to call when done. Should accept parameter for 
-        App object created and app ID.</td>
+            <td class="description last"><p>Callback to call when done. Should accept parameter for App object created and app ID.</p></td>
         </tr>
 
     
@@ -1413,7 +1414,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line406">line 406</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line393">line 393</a>
     </li></ul></dd>
     
 
@@ -1451,11 +1452,7 @@
 
 
 <div class="description">
-    Get one or more apps matching the parameters given. Traverses the app 
-    directory structure and fetches apps accordingly. If neither appUid nor 
-    appVersion if given, will return all apps in directory. If only appUid is 
-    given, will return all versions for that app. Does a callback when done, 
-    with the result.
+    <p>Get one or more apps matching the parameters given. Traverses the app directory structure and fetches apps accordingly. If neither appUid nor appVersion if given, will return all apps in directory. If only appUid is given, will return all versions for that app. Does a callback when done, with the result.</p>
 </div>
 
 
@@ -1507,7 +1504,7 @@
 
             
 
-            <td class="description last">ID of app. Optional.</td>
+            <td class="description last"><p>ID of app. Optional.</p></td>
         </tr>
 
     
@@ -1530,7 +1527,7 @@
 
             
 
-            <td class="description last">Version of app. Optional.</td>
+            <td class="description last"><p>Version of app. Optional.</p></td>
         </tr>
 
     
@@ -1553,8 +1550,8 @@
 
             
 
-            <td class="description last">Callback function to be called when done. 
-        Should accept one parameter for the array containing the apps. Required.</td>
+            <td class="description last"><p>Callback function to be called when done. 
+        Should accept one parameter for the array containing the apps. Required.</p></td>
         </tr>
 
     
@@ -1595,7 +1592,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line359">line 359</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line348">line 348</a>
     </li></ul></dd>
     
 
@@ -1633,7 +1630,7 @@
 
 
 <div class="description">
-    Generic function to output error response through restify's response object.
+    <p>Generic function to output error response through restify's response object.</p>
 </div>
 
 
@@ -1685,7 +1682,7 @@
 
             
 
-            <td class="description last">Restify response objectRequired.</td>
+            <td class="description last"><p>Restify response objectRequired.</p></td>
         </tr>
 
     
@@ -1708,8 +1705,7 @@
 
             
 
-            <td class="description last">Error code. Should ideally match HTTP error codes. 
-        Optional. Default 500.</td>
+            <td class="description last"><p>Error code. Should ideally match HTTP error codes. Optional. Default 500.</p></td>
         </tr>
 
     
@@ -1732,7 +1728,7 @@
 
             
 
-            <td class="description last">Error message. Optional. Default "Unknown error".</td>
+            <td class="description last"><p>Error message. Optional. Default &quot;Unknown error&quot;.</p></td>
         </tr>
 
     
@@ -1773,7 +1769,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line482">line 482</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line472">line 472</a>
     </li></ul></dd>
     
 
@@ -1811,8 +1807,7 @@
 
 
 <div class="description">
-    Generic function to fetch a callback URL. The callback server is defined in 
-    config.callback_server.
+    <p>Generic function to fetch a callback URL. The callback server is defined in config.callback_server.</p>
 </div>
 
 
@@ -1864,9 +1859,7 @@
 
             
 
-            <td class="description last">What callback to perform. Looks at 
-        CALLBACK_URIS to see what URI should be called. Allowed values: 
-        "createApp", "verifyApp", "compiledApp". Required.</td>
+            <td class="description last"><p>What callback to perform. Looks at CALLBACK_URIS to see what URI should be called. Allowed values: &quot;createApp&quot;, &quot;verifyApp&quot;, &quot;compiledApp&quot;. Required.</p></td>
         </tr>
 
     
@@ -1889,7 +1882,7 @@
 
             
 
-            <td class="description last">Get params to append to callback URL.</td>
+            <td class="description last"><p>Get params to append to callback URL.</p></td>
         </tr>
 
     
@@ -1930,7 +1923,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line448">line 448</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line439">line 439</a>
     </li></ul></dd>
     
 
@@ -1968,10 +1961,7 @@
 
 
 <div class="description">
-    Do some checks and preparations common to all calls. Check if passphrase 
-    matches, returns response code 403 if not. Check if all required params are 
-    present, returns response code 500 if not. If everything is OK, returns 
-    response code 200 and params.
+    <p>Do some checks and preparations common to all calls. Check if passphrase matches, returns response code 403 if not. Check if all required params are present, returns response code 500 if not. If everything is OK, returns response code 200 and params.</p>
 </div>
 
 
@@ -2023,7 +2013,7 @@
 
             
 
-            <td class="description last">Restify request objectRequired.</td>
+            <td class="description last"><p>Restify request objectRequired.</p></td>
         </tr>
 
     
@@ -2046,8 +2036,7 @@
 
             
 
-            <td class="description last">Array of objects. The params to return. format: 
-        [{name: <param name>, required: <boolean>}, ...]</td>
+            <td class="description last"><p>Array of objects. The params to return. format: [{name: <param name>, required: <boolean>}, ...]</p></td>
         </tr>
 
     
@@ -2088,7 +2077,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line511">line 511</a>
+        <a href="functions.js.html">functions.js</a>, <a href="functions.js.html#line495">line 495</a>
     </li></ul></dd>
     
 
@@ -2115,8 +2104,7 @@
 
         
 <div class="param-desc">
-    Array with two elements: response code, and object 
-        with params.
+    <p>Array with two elements: response code, and object with params.</p>
 </div>
 
 
@@ -2153,13 +2141,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-functions.html">functions</a></li></ul><h3>Classes</h3><ul><li><a href="App.html">App</a></li></ul><h3>Global</h3><ul><li><a href="global.html#clone">clone</a></li><li><a href="global.html#env">env</a></li><li><a href="global.html#fs">fs</a></li><li><a href="global.html#getConfig">getConfig</a></li><li><a href="global.html#getDirs">getDirs</a></li><li><a href="global.html#getEnvironment">getEnvironment</a></li><li><a href="global.html#getGid">getGid</a></li><li><a href="global.html#getUid">getUid</a></li><li><a href="global.html#log">log</a></li><li><a href="global.html#logLevel">logLevel</a></li><li><a href="global.html#setup">setup</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Compiler%2520Service.html">Compiler Service</a></li><li><a href="module-Functions.html">Functions</a></li><li><a href="module-MLAB%2520App.html">MLAB App</a></li><li><a href="module-Utils.html">Utils</a></li></ul><h3>Classes</h3><ul><li><a href="module-MLAB%2520App.App.html">App</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Thu Apr 09 2015 09:57:40 GMT+0200 (CEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-beta3</a> on Thu May 07 2015 16:41:14 GMT+0200 (CEST)
 </footer>
 
 <script> prettyPrint(); </script>
