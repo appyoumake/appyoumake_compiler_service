@@ -70,8 +70,10 @@ exports.getAppStatus = function(req, res, next) {
     var statusParams = prepareRequest(req, paramNames);
     var status = statusParams[0];
     var params = statusParams[1];
+    var errorDescription = statusParams[2];
+
     if (status!=200) {
-        res.send(status, "Error");
+        res.send(status, errorDescription);
         return next()
     }
     getApps(params.app_uid, params.app_version, function(apps) {
@@ -138,9 +140,10 @@ exports.createApp = function(req, res, next) {
     var statusParams = prepareRequest(req, paramNames);
     var status = statusParams[0];
     var params = statusParams[1];
+    var errorDescription = statusParams[2];
     
     if (status!==200) {
-        res.send(status, "Error in prepareRequest");
+        res.send(status, "Error in prepareRequest: " + errorDescription);
         return next()
     }
     getApps(params.app_uid, params.app_version, function(apps) {
@@ -181,8 +184,10 @@ exports.verifyApp = function(req, res, next) {
     var statusParams = prepareRequest(req, paramNames);
     var status = statusParams[0];
     var params = statusParams[1];
+    var errorDescription = statusParams[2];
+
     if (status!=200) {
-        res.send(status, "Error");
+        res.send(status, errorDescription);
         return next()
     }
     getApps(params.app_uid, params.app_version, function(apps) {
@@ -230,8 +235,9 @@ exports.compileApp = function(req, res, next) {
     var statusParams = prepareRequest(req, paramNames);
     var status = statusParams[0];
     var params = statusParams[1];
+    var errorDescription = statusParams[2];
     if (status!=200) {
-        res.send(status, "Error");
+        res.send(status, errorDescription);
         return next()
     }
 
@@ -293,8 +299,10 @@ exports.getApp = function(req, res, next) {
     var statusParams = prepareRequest(req, paramNames);
     var status = statusParams[0];
     var params = statusParams[1];
+    var errorDescription = statusParams[2];
+
     if (status!=200) {
-        res.send(status, "Error");
+        res.send(status, errorDescription);
         return next()
     }
     
@@ -491,20 +499,25 @@ function checkPassPhrase(params) {
     Do some checks and preparations common to all calls. Check if passphrase matches, returns response code 403 if not. Check if all required params are present, returns response code 500 if not. If everything is OK, returns response code 200 and params.
     @param {Object} req - Restify request objectRequired.
     @param {Array} paramNames - Array of objects. The params to return. format: [{name: <param name>, required: <boolean>}, ...]
-    @returns {Array} Array with two elements: response code, and object with params.
+    @returns {Array} Array with three elements: response code, object with params, and a string with a description in case of errors.
 */
 function prepareRequest(req, paramNames) {
+    var errorDescription = "";
     if (!checkPassPhrase(req.params)) {
+        errorDescription = "Bad passphrase";
         utils.log("bad passphrase", utils.logLevel.error);
-        return [403, {}];
+        return [403, {}, errorDescription];
     }
     if (!paramNames) paramNames = [];
     var params = {};
     for (var i=0, ii=paramNames.length; i<ii; i++) {
         var paramName = paramNames[i];
         params[paramName["name"]] = paramName["name"] in req.params ? req.params[paramName["name"]] : null;
-        if (paramName["required"] && params[paramName["name"]]===null) return [500, {}]
+        if (paramName["required"] && params[paramName["name"]]===null) {
+            errorDescription = "Required parameter " + paramName["name"] + " is missing";
+            return [400, {}, errorDescription];
+        }
     }
-    return [200, params];
+    return [200, params, errorDescription];
 }
 
