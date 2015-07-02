@@ -86,6 +86,6 @@ server.get({path: "/getApp", version: "1"}, functions.getApp);
 
 
 // Start listening
-server.listen(config.port_number ,"localhost", function(){
+server.listen(config.port_number ,config.listen_on_ip, function(){
     utils.log(server.name + " listening at " + server.url, utils.logLevel.info, true);
 });

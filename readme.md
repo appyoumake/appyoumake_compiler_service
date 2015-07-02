@@ -97,22 +97,24 @@ The same directory should be served using rsync
 
 
 ### rsync
-Based on https://help.ubuntu.com/community/rsync
+We install rsync, running  as a daemon on default port 873, to be able to move files between the app-builder and the compiler services
+
+Configuration is based on https://help.ubuntu.com/community/rsync
 
 #### Configuration of the rsync Daemon
 
-1. Edit the file /etc/default/rsync to start rsync as daemon using xinetd. The entry listed below, should be changed from false to inetd.
+Edit the file /etc/default/rsync to start rsync as daemon using xinetd. The entry listed below, should be changed from false to inetd.
 
 ```
 RSYNC_ENABLE=inetd
 ```
 
-2. Install xinetd because it's not installed by default.
+Install xinetd because it's not installed by default.
 ```
 sudo apt-get -y install xinetd
 ```
 
-3. Create the file /etc/xinetd.d/rsync to launch rsync via xinetd. It should contain the following lines of text.
+Create the file /etc/xinetd.d/rsync to launch rsync via xinetd. It should contain the following lines of text.
 
 ```
 service rsync
@@ -127,40 +129,46 @@ service rsync
     flags = IPv6
 }
 ```
-4. Create the file /etc/rsyncd.conf configuration for rsync in daemon mode. The file should contain the following. In the file, user should be replaced with the name of user on the remote machine being logged into.
+Create the file /etc/rsyncd.conf configuration for rsync in daemon mode. This would make the share `cs_inbox` read and writable for user `mlab`.
 
 ```
-max connections = 2
+max connections = 6
 log file = /var/log/rsync.log
 timeout = 300
 
-[share]
-comment = Public Share
-path = /home/share
+[cs_inbox]
+comment = Compiler server inbox, where to put the app to be compiled
+path = /var/local/mlab_cs/inbox
 read only = no
 list = yes
 uid = nobody
 gid = nogroup
-auth users = user
+auth users = mlab
 secrets file = /etc/rsyncd.secrets
 ```
 
-5. Create /etc/rsyncd.secrets for user's password. User should be the same as above, with password the one used to log into the remote machine as the indicated user.
+Create /etc/rsyncd.secrets for mlab user's password. Replace `password` with a suitable password. 
 ```
 sudo vim /etc/rsyncd.secrets 
-user:password
+mlab:password
 ```
 
-6. This step sets the file permissions for rsyncd.secrets.
+This step sets the file permissions for rsyncd.secrets.
 ```
 $ sudo chmod 600 /etc/rsyncd.secrets
 ```
 
-7. Start/Restart xinetd
+Start/Restart xinetd
 ```
 sudo /etc/init.d/xinetd restart
 ```
 
+Testing rsync
+
+Run the following command to check if everything is ok. You will be asked for the password and the output would be the content of the share (probably empty).
+```
+sudo rsync mlab@localhost::cd_inbox
+```
 
 ### Setup Compiler service
 ```bash
