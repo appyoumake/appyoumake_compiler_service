@@ -87,6 +87,10 @@ exports.App.prototype = {
         return path.join(config.cordova_apps_path, this.id, this.version);
     },
 
+    getInboxPath: function() {
+        return path.join(config.inbox_path, this.id, this.version);
+    },
+
     /**
         Get the path for the lock file, used when compiling app to avoid concurrent compile jobs.
         @param {String} platform - Name of platform we are compiling for. Required.
@@ -204,10 +208,30 @@ exports.App.prototype = {
     verify: function(checksum, callback) {
         utils.log("verify", utils.logLevel.debug);
         this.getChecksum(function(appChecksum) {
+            utils.log("verifying checksum " + appChecksum + " vs. " + checksum, utils.logLevel.debug);
             callback(appChecksum===checksum);
         });
     },
-    
+
+
+    symlinkProject: function(){
+        /**
+         Creates symlink in cordova folder to rsync inbox
+         */
+
+        utils.log("Creating symlink", utils.logLevel.debug);
+
+        // Setup dyn link between inbox and cordova working folder
+        var source = this.getInboxPath() + "/www";
+        var target = this.getPath() + "/www";
+
+        fs.symlink(source, target,"dir", function(err) {
+            if(err) utils.log("Error creating symlink " + err.message, utils.logLevel.error);
+            //FIX handle different errors
+        });
+
+    },
+
     /**
         Add platform (android, ios, etc) to Cordova app. Done "anyways". If platform has already been added, this will fail, so we are not handling errors here. If adding the platform fails otherwise (ie. if platform hasn't been set up properly on server, the paths are wrong, etc), the subsequent compile job will also fail, and you will need to do some work on your server anyway. So that's why no errors are caught here.
         @param {String} platform - Platform to add. Required.

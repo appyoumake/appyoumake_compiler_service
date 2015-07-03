@@ -237,6 +237,7 @@ exports.compileApp = function(req, res, next) {
     var status = statusParams[0];
     var params = statusParams[1];
     var errorDescription = statusParams[2];
+
     if (status!=200) {
         res.send(status, errorDescription);
         return next()
@@ -403,8 +404,22 @@ function getApps(appUid, appVersion, callback) {
     @param {Function} callback - Callback to call when done. Should accept parameter for App object created and app ID.
 */
 function createNewApp(appUid, appVersion, configXML, callback) {
-    utils.log("createNewApp", utils.logLevel.debug);
-	var projectPath = path.join(config.cordova_apps_path, appUid); //, appVersion);
+    utils.log("createNewApp " + appUid + " " + appVersion, utils.logLevel.debug);
+
+    // Create directories in rsync share (inbox)
+    var projectInboxPath = path.join(config.inbox_path, appUid); //, appVersion);
+    fs.mkdir(projectInboxPath, function(err) {
+        //if error different than dir exists
+        if(err && err.code != "EEXIST") utils.log("Error createNewApp inbox: " + err.message, utils.logLevel.error);
+        projectInboxPath = path.join(projectInboxPath, appVersion);
+        fs.mkdir(projectInboxPath, function(err) {
+            if (err) utils.log("Error createNewApp: " + err.message, utils.logLevel.error);
+        });
+    });
+
+
+    // Create directories in working directory and calls cordova create ...
+    var projectPath = path.join(config.cordova_apps_path, appUid); //, appVersion);
 
 	//Create project path
     fs.mkdir(projectPath, function(err) {
@@ -438,6 +453,7 @@ function createNewApp(appUid, appVersion, configXML, callback) {
 				// and do callback.
 				getApps(appUid, appVersion, function(apps) {
 					var app = apps[0];
+                    app.prepareProject();
 					app.writeConfig(configXML, function() {
 						callback(app, appUid, appVersion);
 					});
@@ -462,7 +478,7 @@ function performCallback(callbackType, params) {
     utils.log("performCallback " + callbackType, utils.logLevel.debug);
     var serverUrl = config.callback_server;
     var transport = http;
-    var port = 80;
+    var port = config.callback_server_port;
     if (serverUrl.slice(0,5)==="https") {
         transport = https;
         port = 443;
