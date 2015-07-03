@@ -82,6 +82,18 @@ sudo npm install -g cordova
 Cordova is then installed into: /usr/local/lib/node_modules/cordova
 Test and read more on: https://cordova.apache.org/docs/en/5.1.1/guide_cli_index.md.html#The%20Command-Line%20Interface
 
+### Creat mlab_cs user and group
+Create user and group `cs_user`. Set password and remember
+
+```
+groupadd mlab_cs
+useradd -M -g mlab_cs mlab_cs
+passwd mlab_cs
+```
+
+To add other users to the mlab_cs group: `usermod -a -G mlab_cs username`. It is necessary to logout and back in if the user being added is logged in.
+
+
 ### Preparing filesystem (create users?
 We will let the compiler service do its magic in the /var/local/mlab_cs folder
 The compiler service will look for www-folders of the apps to be compiled in: /var/local/mlab_cs/inbox
@@ -91,9 +103,12 @@ Compiled apps are put in ... (or served directly from ...)
 mkdir /var/local/mlab_cs
 mkdir /var/local/mlab_cs/inbox
 mkdir /var/local/mlab_cs/working
-chmod 
+chown -R root:mlab_cs /var/local/mlab_cs 
+chmod -R 770 /var/local/mlab_cs
 ```
-The same directory should be served using rsync
+
+The `inbox` is the dir used for the rsync share. The MLAB editor will put apps to be compiled in this dir.
+The `working` directory is the working directory for the compiler service. Cordova commands are run in this directory. 
 
 
 ### rsync
@@ -177,6 +192,8 @@ git clone https://github.com/Sinettlab/mlab_compiler.git
 ```
 
 Edit config/config.json  
+
+
 
 
 ### Run the Compiler service

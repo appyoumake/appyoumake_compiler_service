@@ -146,6 +146,7 @@ exports.createApp = function(req, res, next) {
         res.send(status, "Error in prepareRequest: " + errorDescription);
         return next()
     }
+
     getApps(params.app_uid, params.app_version, function(apps) {
         if (!apps.length) {
             utils.log("no app", utils.logLevel.debug);
@@ -360,6 +361,8 @@ function getApps(appUid, appVersion, callback) {
     if (appUid) {
         appsPath.push(appUid);
         if (appVersion) appsPath.push(appVersion);
+    } else {
+        utils.log("getApps no appUid", utils.logLevel.debug);
     }
     var pathLength = appsPath.length;
     appsPath = appsPath.join(path.sep);
@@ -402,9 +405,19 @@ function getApps(appUid, appVersion, callback) {
 function createNewApp(appUid, appVersion, configXML, callback) {
     utils.log("createNewApp", utils.logLevel.debug);
 	var projectPath = path.join(config.cordova_apps_path, appUid); //, appVersion);
-	fs.mkdir(projectPath, function(err) {
+
+	//Create project path
+    fs.mkdir(projectPath, function(err) {
+        //if error different than dir exists
+        if(err && err.code != "EEXIST") utils.log("Error createNewApp: " + err.message, utils.logLevel.error);
+
+        //Create project/version path
 		projectPath = path.join(projectPath, appVersion);
-		fs.mkdir(projectPath, function(err) { 
+		fs.mkdir(projectPath, function(err) {
+
+            if(err) utils.log("Error createNewApp: " + err.message, utils.logLevel.error);
+            //FIX what to do if dir exists?
+
 			// Build a list of arguments for cordova
 			var args = [];
 			args.push("create");
