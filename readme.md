@@ -66,9 +66,13 @@ sudo apt-get install oracle-java8-installer
 
 ### Android SDK
 Download from: http://dl.google.com/android/android-sdk_r24.2-linux.tgz  
-Unpack to somewhere (e.g. /src/local/android-sdk)  
-Add to path  
-Run "android sdk" to install packages  
+Unpack to somewhere (e.g. /opt/android-sdk), destination should be put in config.json of the CS.  
+Add to path? Not necessary?   
+
+Run `/opt/android-sdk/tools/android/tools`to open SDK Manager and install packages
+
+http://cordova.apache.org/docs/en/5.0.0/guide_platforms_android_index.md.html
+
 Some Android SDK tools (used by Cordova) are still only 32-bits. To make them work on Ubuntu 64bit:  
 ```
 sudo apt-get install lib32stdc++6 lib32z1  
@@ -82,6 +86,8 @@ sudo npm install -g cordova
 Cordova is then installed into: /usr/local/lib/node_modules/cordova
 Test and read more on: https://cordova.apache.org/docs/en/5.1.1/guide_cli_index.md.html#The%20Command-Line%20Interface
 
+Remove or change permissions to `~/tmp/`
+
 ### Creat mlab_cs user and group
 Create user and group `cs_user`. Set password and remember
 
@@ -94,7 +100,7 @@ passwd mlab_cs
 To add other users to the mlab_cs group: `usermod -a -G mlab_cs username`. It is necessary to logout and back in if the user being added is logged in.
 
 
-### Preparing filesystem (create users?
+### Preparing filesystem, create mlab_cs user
 We will let the compiler service do its magic in the /var/local/mlab_cs folder
 The compiler service will look for www-folders of the apps to be compiled in: /var/local/mlab_cs/inbox
 The compiler service will use the folder /var/local/mlab_cs/working for compiling apps
@@ -109,6 +115,16 @@ chmod -R 770 /var/local/mlab_cs
 
 The `inbox` is the dir used for the rsync share. The MLAB editor will put apps to be compiled in this dir.
 The `working` directory is the working directory for the compiler service. Cordova commands are run in this directory. 
+
+
+Will not work, cordova will still need `~/.cordova` .... Cordova uses npm to download plugins and platforms. Set the cache to something different than the home folder
+```
+mkdir /tmp/npm-cache
+chmod 777 /tmp/npm-cache
+sudo npm config set cache /tmp/npm-cache --global
+```
+
+
 
 
 ### rsync
@@ -185,24 +201,52 @@ Run the following command to check if everything is ok. You will be asked for th
 sudo rsync mlab@localhost::cd_inbox
 ```
 
+
 ### Setup Compiler service
 ```bash
-
 git clone https://github.com/Sinettlab/mlab_compiler.git
 ```
 
-Edit config/config.json  
+Edit config/config.json
 
-
+`cordova_user` is the user to performe the cordova commands. The user running the node.js server would need privileges to run these commands as a different user if they are not the same. 
+`listen_on_ip` set the ip CS should listen on. Set to `0.0.0.0` is CS should listen on all ports
+`inbox_path` is the path of the rsync directory. CS will fetch the files from this directory and compile them in the `cordova_apps_path` directory
+`key` is the passphrase used in calls to the CS server
 
 
 ### Run the Compiler service
 * in console:  
    - cd into directory  
-   - node app.js  
+   - `node app.js`  
 
 * Serve as daemon:
     - cd into directory
     - pm2 start app.js
     - pm2 stop app.js
     - pm2 restart app.js
+
+    
+### Testing and debugging
+
+####jMeter 
+jMeter may be used to script call to the server. A jMeter script-file is in the bard repository
+
+#### Callback server
+A very simple callback server (node.js) is in the bard repository
+
+
+#### node-inspector and chrome
+If node.js is not run from an IDE supporting node debugging. 
+
+```
+npm install -g node-inspector
+```
+
+Run app with:
+`node-debug app.js`
+Should be combined with chrome plugin for node-inspector 
+
+
+
+

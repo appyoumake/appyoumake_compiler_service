@@ -161,6 +161,8 @@ exports.App.prototype = {
         args.push(path.join(app.getPath(), "www"));
         // Tar the www directory to temp file
         var tar = child_process.spawn("tar", args, {env: environment, uid: utils.getUid(), gid: utils.getGid()});
+
+
         tar.on("close", function(code) {
             // If tar failed, do callback with null
             if (code!==0) return callback(null);
@@ -192,11 +194,11 @@ exports.App.prototype = {
                 child_process.spawn("rm", [tempFilePath], {env: environment, uid: utils.getUid(), gid: utils.getGid()});
             });
             checksum.stderr.on("data", function (data) {
-                utils.log("stderr: " + data, utils.logLevel.error);
+                utils.log("stderr App.getChecksum md5cmd: " + data, utils.logLevel.error);
             });
         });
         tar.stderr.on("data", function (data) {
-            utils.log("stderr: " + data, utils.logLevel.error);
+            utils.log("stderr App.getChecksum tar: " + data, utils.logLevel.error);
         });
     },
     
@@ -240,6 +242,8 @@ exports.App.prototype = {
     addPlatform: function(platform, callback) {
         utils.log("addPlatform " + platform, utils.logLevel.debug);
         var addPlatform = child_process.spawn(config.cordova_bin_path, ["platform", "add", platform], {cwd: this.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
+        //var addPlatform = child_process.spawn(config.cordova_bin_path, ["platform", "add", platform], {cwd: this.getPath(), uid: utils.getUid()});
+
         addPlatform.on("close", function(code) {
             if (code!==0) utils.log("Error adding platform", utils.logLevel.error);
             callback(true);

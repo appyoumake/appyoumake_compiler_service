@@ -4,7 +4,7 @@
     "cordova_bin_path": "cordova",
     "inbox_path": "/var/local/mlab_cs/inbox",
     "cordova_apps_path": "/var/local/mlab_cs/working",
-    "cordova_user": "bard",
+    "cordova_user": "mlab_cs",
     "key": "RLjYNDVQEh6fA*;zthtftc9m",
     "callback_server": "http://127.0.0.1",
     "callback_server_port": 8081,
@@ -14,7 +14,7 @@
     "environment": {},
     "android": {
         "environment": {
-            "ANDROID_HOME": "/opt/android-sdk-linux/",
+            "ANDROID_HOME": "/opt/android-sdk/",
             "JAVA_HOME": "/usr/lib/jvm/java-8-oracle/jre/"
         }
     },

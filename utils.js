@@ -77,15 +77,16 @@ exports.setup = function() {
 				exports.log("Running commands as " + user + ", " + uid, exports.logLevel.info, true);
 			});
 			getUid.stderr.on("data", function (data) {
-				exports.log("stderr: " + data, exports.logLevel.error);
+				exports.log("stderr utils.setup getUid: " + data, exports.logLevel.error);
 				uid = null;
 			});
 			var getGid = child_process.spawn("id", ["-g", user], {env:environment});
 			getGid.stdout.on("data", function(data) {
 				gid = parseInt(data.toString());
+                exports.log("Running commands as " + user + ", " + uid + " group: " + gid + " ", exports.logLevel.info, true);
 			});
 			getGid.stderr.on("data", function (data) {
-				exports.log("stderr: " + data, exports.logLevel.error);
+				exports.log("stderr utils.setup getGid: " + data, exports.logLevel.error);
 				gid = null;
 			});
 		}

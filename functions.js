@@ -350,7 +350,7 @@ exports.getApp = function(req, res, next) {
 *******************************************************************************/
 
 /**
-    Get one or more apps matching the parameters given. Traverses the app directory structure and fetches apps accordingly. If neither appUid nor appVersion if given, will return all apps in directory. If only appUid is given, will return all versions for that app. Does a callback when done, with the result.
+    Get one or more apps matching the parameters given. Traverses the app directory structure and fetches apps accordingly. If neither appUid nor appVersion is given, will return all apps in directory. If only appUid is given, will return all versions for that app. Does a callback when done, with the result.
     @param {String} appUid - ID of app. Optional.
     @param {String} appVersion - Version of app. Optional.
     @param {Function} callback - Callback function to be called when done. 
