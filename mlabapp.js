@@ -124,7 +124,8 @@ exports.App.prototype = {
     */
     getExecutableDirPath: function(platform) {
         var dirPath = "";
-        if (platform==="android" || platform==="ios") dirPath = path.join(this.getPlatformPath(platform), "out");
+        if (platform==="android") dirPath = path.join(this.getPlatformPath(platform), config.android.executable_path)
+        else if (platform==="ios") dirPath = path.join(this.getPlatformPath(platform), config.ios.executable_path);
         return dirPath;
     },
 
@@ -216,22 +217,27 @@ exports.App.prototype = {
     },
 
 
-    symlinkProject: function(){
+    symlinkProjectSource: function(){
         /**
-         Creates symlink in cordova folder to rsync inbox
+         Creates symlink from www folder in rsync inbox to cordova project folder
          */
 
         utils.log("Creating symlink", utils.logLevel.debug);
 
         // Setup dyn link between inbox and cordova working folder
-        var source = this.getInboxPath() + "/www";
-        var target = this.getPath() + "/www";
+        var source = path.join(this.getInboxPath(), 'www');
+        var target = path.join(this.getPath(), 'www');
 
-        fs.symlink(source, target,"dir", function(err) {
-            if(err) utils.log("Error creating symlink " + err.message, utils.logLevel.error);
-            //FIX handle different errors
+        //TODO check if rsync folder is empty: if empty, move www folder from cordova to rsynk folder, if not delete www folder in cordova before symlinking
+        fs.rename(target, source, function(err) {
+            if(err) utils.log("Error moving www folder before creating symlink" + err.message, utils.logLevel.error);
+
+            fs.symlink(source, target, "dir", function (err) {
+                if (err) utils.log("Error creating symlink " + err.message, utils.logLevel.error);
+                //FIX handle different errors
+            });
+
         });
-
     },
 
     /**

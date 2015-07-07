@@ -16,10 +16,12 @@
         "environment": {
             "ANDROID_HOME": "/opt/android-sdk/",
             "JAVA_HOME": "/usr/lib/jvm/java-8-oracle/jre/"
-        }
+        },
+        "executable_path": "build/outputs/apk/"
     },
     "ios": {
-        "provisioning_profile": "MLAB dev"
+        "provisioning_profile": "MLAB dev",
+        "executable_path": "out"
     }
 }
 

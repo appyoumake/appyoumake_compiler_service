@@ -1,33 +1,6 @@
 MLAB Compiler Service
 ----------------------------------------------------------------
 
-## Install and start instructions (short version by Snapper):
-
-All platforms:
-- Install Cordova/Phonegap  
-- Clone or copy this code into somewhere useful  
-- Install node.js (probably already installed because Cordova uses it)  
-    - Ubuntu: apt-get install nodejs  
-    - Others: https://nodejs.org/download/  
-- Install PM2:  
-    npm install pm2 -g  
-
-- Prerequisites for compiling for iOS  
-    - Must be done on OSX  
-    - Xcode installed (tested on Xcode 6.3)  
-    - Code signing identity and provisioning profile set up (name of provisioning profile goes into config file)  
-- Prerequisistes for compiling for Android  
-    - Android SDK installed (path goes into config file)  
-
-
-Run in console:
-- cd into directory
-- node app.js
-Serve as daemon:
-- cd into directory
-- pm2 start app.js
-- pm2 stop app.js
-- pm2 restart app.js
 
 Install instructions for Compiler service with Android compiling on Xubuntu 14.04:
 -----------------------------------------------------------------------------------------
@@ -44,10 +17,10 @@ Install instructions for Compiler service with Android compiling on Xubuntu 14.0
 ```       
 #### Vmware tools (optional)
 ```
-      apt-get install gcc    
-      apt-get install make 
+    sudo apt-get install gcc    
+    sudo apt-get install make 
 ```
-      Then install the tools ...   
+Then install the tools ...   
  
 ### Node js
 ```
@@ -55,7 +28,7 @@ sudo apt-get install nodejs
 sudo apt-get install npm  
 sudo apt-get install nodejs-legacy   
 ```
-nodejs-legacy is necessary since node is now named nodejs in latest ubuntu versions
+`nodejs-legacy` is necessary since node is now named nodejs in latest ubuntu versions
 
 ### Oracle java
 ```
@@ -66,10 +39,10 @@ sudo apt-get install oracle-java8-installer
 
 ### Android SDK
 Download from: http://dl.google.com/android/android-sdk_r24.2-linux.tgz  
-Unpack to somewhere (e.g. /opt/android-sdk), destination should be put in config.json of the CS.  
-Add to path? Not necessary?   
+Unpack to somewhere (e.g. /opt/android-sdk). Destination should be put in config.json of the CS.  
 
-Run `/opt/android-sdk/tools/android/tools`to open SDK Manager and install packages
+
+Run `/opt/android-sdk/tools/android/tools`to open SDK Manager and install necessary packages
 
 http://cordova.apache.org/docs/en/5.0.0/guide_platforms_android_index.md.html
 
@@ -84,16 +57,21 @@ Install cordova globaly  with:
 sudo npm install -g cordova
 ```
 Cordova is then installed into: /usr/local/lib/node_modules/cordova
+
 Test and read more on: https://cordova.apache.org/docs/en/5.1.1/guide_cli_index.md.html#The%20Command-Line%20Interface
 
-Remove or change permissions to `~/tmp/`
+When cordova is installed globally (-g). A tmp folder is created in the current users home folder, but this is owned by root. 
+Remove or change permissions to this folder
+ ``` 
+ sudo rmdir ~/tmp/
+ ```
 
 ### Creat mlab_cs user and group
-Create user and group `cs_user`. Set password and remember
+Create user and group `mlab_cs`. Set password and remember. When set in the CS config, all Cordova commands should be executed as this user.
 
 ```
 groupadd mlab_cs
-useradd -M -g mlab_cs mlab_cs
+useradd -g mlab_cs mlab_cs
 passwd mlab_cs
 ```
 
@@ -101,10 +79,10 @@ To add other users to the mlab_cs group: `usermod -a -G mlab_cs username`. It is
 
 
 ### Preparing filesystem, create mlab_cs user
-We will let the compiler service do its magic in the /var/local/mlab_cs folder
-The compiler service will look for www-folders of the apps to be compiled in: /var/local/mlab_cs/inbox
-The compiler service will use the folder /var/local/mlab_cs/working for compiling apps
-Compiled apps are put in ... (or served directly from ...)
+We will let the compiler service do most of its magic in the /var/local/mlab_cs folder
+The compiler service will look for www-folders, and more, of the apps to be compiled in: `/var/local/mlab_cs/inbox`
+The compiler service and cordova will use the folder `/var/local/mlab_cs/working` for compiling apps
+
 ```bash
 mkdir /var/local/mlab_cs
 mkdir /var/local/mlab_cs/inbox
@@ -116,19 +94,8 @@ chmod -R 770 /var/local/mlab_cs
 The `inbox` is the dir used for the rsync share. The MLAB editor will put apps to be compiled in this dir.
 The `working` directory is the working directory for the compiler service. Cordova commands are run in this directory. 
 
-
-Will not work, cordova will still need `~/.cordova` .... Cordova uses npm to download plugins and platforms. Set the cache to something different than the home folder
-```
-mkdir /tmp/npm-cache
-chmod 777 /tmp/npm-cache
-sudo npm config set cache /tmp/npm-cache --global
-```
-
-
-
-
 ### rsync
-We install rsync, running  as a daemon on default port 873, to be able to move files between the app-builder and the compiler services
+We will install rsync, running  as a daemon on default port 873, to be able to move files between the app-builder and the compiler services
 
 Configuration is based on https://help.ubuntu.com/community/rsync
 
@@ -140,7 +107,7 @@ Edit the file /etc/default/rsync to start rsync as daemon using xinetd. The entr
 RSYNC_ENABLE=inetd
 ```
 
-Install xinetd because it's not installed by default.
+Install xinetd. It is not installed by default.
 ```
 sudo apt-get -y install xinetd
 ```
@@ -198,18 +165,20 @@ Testing rsync
 
 Run the following command to check if everything is ok. You will be asked for the password and the output would be the content of the share (probably empty).
 ```
-sudo rsync mlab@localhost::cd_inbox
+rsync mlab@localhost::cd_inbox
 ```
 
 
 ### Setup Compiler service
+Find a suitable folder then ...
+
 ```bash
 git clone https://github.com/Sinettlab/mlab_compiler.git
 ```
 
 Edit config/config.json
 
-`cordova_user` is the user to performe the cordova commands. The user running the node.js server would need privileges to run these commands as a different user if they are not the same. 
+`cordova_user` is the user to perform the cordova commands. The user running the node.js server would need privileges to run these commands as a different user if they are not the same. 
 `listen_on_ip` set the ip CS should listen on. Set to `0.0.0.0` is CS should listen on all ports
 `inbox_path` is the path of the rsync directory. CS will fetch the files from this directory and compile them in the `cordova_apps_path` directory
 `key` is the passphrase used in calls to the CS server
@@ -250,3 +219,30 @@ Should be combined with chrome plugin for node-inspector
 
 
 
+# Install and start instructions (short version by Snapper):
+
+All platforms:
+- Install Cordova/Phonegap  
+- Clone or copy this code into somewhere useful  
+- Install node.js (probably already installed because Cordova uses it)  
+    - Ubuntu: apt-get install nodejs  
+    - Others: https://nodejs.org/download/  
+- Install PM2:  
+    npm install pm2 -g  
+
+- Prerequisites for compiling for iOS  
+    - Must be done on OSX  
+    - Xcode installed (tested on Xcode 6.3)  
+    - Code signing identity and provisioning profile set up (name of provisioning profile goes into config file)  
+- Prerequisistes for compiling for Android  
+    - Android SDK installed (path goes into config file)  
+
+
+Run in console:
+- cd into directory
+- node app.js
+Serve as daemon:
+- cd into directory
+- pm2 start app.js
+- pm2 stop app.js
+- pm2 restart app.js

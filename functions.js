@@ -136,7 +136,8 @@ exports.createApp = function(req, res, next) {
         {"name": "app_uid", "required": true},
         {"name": "app_version", "required": true},
         {"name": "config_xml", "required": true}
-    ]
+    ];
+
     var statusParams = prepareRequest(req, paramNames);
     var status = statusParams[0];
     var params = statusParams[1];
@@ -148,11 +149,12 @@ exports.createApp = function(req, res, next) {
     }
 
     getApps(params.app_uid, params.app_version, function(apps) {
-        if (!apps.length) {
+        if (apps.length) {
+            createAppFinished(apps[0], params.app_uid, params.app_version);
+        } else {
             utils.log("no app", utils.logLevel.debug);
             createNewApp(params.app_uid, params.app_version, params.config_xml, createAppFinished);
         }
-        else createAppFinished(apps[0], params.app_uid, params.app_version);
     });
     res.send(200, true);
     return next();
@@ -192,7 +194,7 @@ exports.verifyApp = function(req, res, next) {
         return next()
     }
     getApps(params.app_uid, params.app_version, function(apps) {
-        if (apps) {
+        if (apps && apps.length > 0) {
             var app = apps[0];
             app.verify(params.checksum, function(verified) {
                 performCallback("verifyApp", {app_uid: app.id, app_version: app.version, result: verified});
@@ -361,20 +363,32 @@ function getApps(appUid, appVersion, callback) {
     var appsPath = [config.cordova_apps_path];
     if (appUid) {
         appsPath.push(appUid);
-        if (appVersion) appsPath.push(appVersion);
+        if (appVersion) {
+            appsPath.push(appVersion);
+        } else {
+            utils.log("getApps no appVersion", utils.logLevel.debug);
+        }
     } else {
         utils.log("getApps no appUid", utils.logLevel.debug);
-    }
+    };
     var pathLength = appsPath.length;
     appsPath = appsPath.join(path.sep);
     fs.stat(appsPath, function(err, stat) {
-        if (err || !stat.isDirectory()) return callback([]);
+
+        if (err || !stat.isDirectory()){
+            if (err.code = "ENOENT"){
+                utils.log("getApps: app or version does not exist on compiler service", utils.logLevel.debug);
+            }
+            return callback([]);
+        }
+
         // We assume both uid and version is given
         var depth = 0;
         // No uid, no version
         if (pathLength==1) depth = 2;
         // Uid, but no version
         else if (pathLength==2) depth = 1;
+
         // Get the paths of the directories matching
         utils.getDirs(appsPath, depth, function(appPaths) {
             if (depth==0) appPaths = [appsPath];
@@ -411,9 +425,16 @@ function createNewApp(appUid, appVersion, configXML, callback) {
     fs.mkdir(projectInboxPath, function(err) {
         //if error different than dir exists
         if(err && err.code != "EEXIST") utils.log("Error createNewApp inbox: " + err.message, utils.logLevel.error);
+
+        // Create version folder
         projectInboxPath = path.join(projectInboxPath, appVersion);
         fs.mkdir(projectInboxPath, function(err) {
             if (err) utils.log("Error createNewApp: " + err.message, utils.logLevel.error);
+
+            // Creating www folder, is moved to symlink
+            //fs.mkdir(path.join(projectInboxPath,'www'), function(err) {
+            //    if (err) utils.log("Error createNewApp www folder: " + err.message, utils.logLevel.error);
+            //});
         });
     });
 
@@ -453,7 +474,8 @@ function createNewApp(appUid, appVersion, configXML, callback) {
 				// and do callback.
 				getApps(appUid, appVersion, function(apps) {
 					var app = apps[0];
-                    app.prepareProject();
+                    //app.prepareProject();
+                    app.symlinkProjectSource();
 					app.writeConfig(configXML, function() {
 						callback(app, appUid, appVersion);
 					});
