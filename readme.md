@@ -42,7 +42,7 @@ Download from: http://dl.google.com/android/android-sdk_r24.2-linux.tgz
 Unpack to somewhere (e.g. /opt/android-sdk). Destination should be put in config.json of the CS.  
 
 
-Run `/opt/android-sdk/tools/android/tools`to open SDK Manager and install necessary packages
+Run `/opt/android-sdk/tools/android`to open SDK Manager and install necessary packages
 
 http://cordova.apache.org/docs/en/5.0.0/guide_platforms_android_index.md.html
 
@@ -71,7 +71,7 @@ Create user and group `mlab_cs`. Set password and remember. When set in the CS c
 
 ```
 groupadd mlab_cs
-useradd -g mlab_cs mlab_cs
+useradd -g -m mlab_cs mlab_cs
 passwd mlab_cs
 ```
 
@@ -127,7 +127,7 @@ service rsync
     flags = IPv6
 }
 ```
-Create the file /etc/rsyncd.conf configuration for rsync in daemon mode. This would make the share `cs_inbox` read and writable for user `mlab`.
+Create the file `/etc/rsyncd.conf` configuration for rsync in daemon mode. This would make the share `cs_inbox` read and writable for user `mlab`.
 
 ```
 max connections = 6
@@ -139,8 +139,8 @@ comment = Compiler server inbox, where to put the app to be compiled
 path = /var/local/mlab_cs/inbox
 read only = no
 list = yes
-uid = nobody
-gid = nogroup
+uid = mlab_cs
+gid = mlab_cs
 auth users = mlab
 secrets file = /etc/rsyncd.secrets
 ```
@@ -165,20 +165,23 @@ Testing rsync
 
 Run the following command to check if everything is ok. You will be asked for the password and the output would be the content of the share (probably empty).
 ```
-rsync mlab@localhost::cd_inbox
+rsync mlab@localhost::cs_inbox
 ```
 
 
-### Setup Compiler service
-Find a suitable folder then ...
+### Download and setup Compiler service
+Logg in as mlab_cs and
 
 ```bash
+cd ~
+mkdir MLAB
+cd MLAB
 git clone https://github.com/Sinettlab/mlab_compiler.git
 ```
 
 Edit config/config.json
 
-`cordova_user` is the user to perform the cordova commands. The user running the node.js server would need privileges to run these commands as a different user if they are not the same. 
+`cordova_user` is the user to perform the cordova commands. The user running the node.js server would need privileges to run these commands as a different user if they are not the same. Use `mlab_cs` if no good reason not to. 
 `listen_on_ip` set the ip CS should listen on. Set to `0.0.0.0` is CS should listen on all ports
 `inbox_path` is the path of the rsync directory. CS will fetch the files from this directory and compile them in the `cordova_apps_path` directory
 `key` is the passphrase used in calls to the CS server
