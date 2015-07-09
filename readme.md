@@ -10,7 +10,7 @@ Install instructions for Compiler service with Android compiling on Xubuntu 14.0
   sudo apt-get install git
 ```
 
-#### Optional toolsl:  
+#### Optional tools:  
 ```
    sudo apt-get install emacs    
    sudo apt-get install openssh-server
@@ -66,7 +66,7 @@ Remove or change permissions to this folder
  sudo rmdir ~/tmp/
  ```
 
-### Creat mlab_cs user and group
+### Create mlab_cs user and group
 Create user and group `mlab_cs`. Set password and remember. When set in the CS config, all Cordova commands should be executed as this user.
 
 ```
@@ -181,10 +181,10 @@ git clone https://github.com/Sinettlab/mlab_compiler.git
 
 Edit config/config.json
 
-`cordova_user` is the user to perform the cordova commands. The user running the node.js server would need privileges to run these commands as a different user if they are not the same. Use `mlab_cs` if no good reason not to. 
-`listen_on_ip` set the ip CS should listen on. Set to `0.0.0.0` is CS should listen on all ports
-`inbox_path` is the path of the rsync directory. CS will fetch the files from this directory and compile them in the `cordova_apps_path` directory
-`key` is the passphrase used in calls to the CS server
+* `cordova_user` is the user to perform the cordova commands. The user running the node.js server would need privileges to run these commands as a different user if they are not the same. Use `mlab_cs` if no good reason not to.
+* `listen_on_ip` set the ip CS should listen on. Set to `0.0.0.0` is CS should listen on all ports
+* `inbox_path` is the path of the rsync directory. CS will fetch the files from this directory and compile them in the `cordova_apps_path` directory
+* `key` is the passphrase used in calls to the CS server
 
 
 ### Run the Compiler service
@@ -202,14 +202,14 @@ Edit config/config.json
 ### Testing and debugging
 
 ####jMeter 
-jMeter may be used to script call to the server. A jMeter script-file is in the bard repository
+jMeter may be used to script calls to the server. A jMeter script-file is in the sinettlab/bard repository
 
 #### Callback server
-A very simple callback server (node.js) is in the bard repository
+A very simple callback server (node.js) is in the sinettlab/bard repository
 
 
 #### node-inspector and chrome
-If node.js is not run from an IDE supporting node debugging. 
+If node.js is not run from an IDE supporting node.js debugging. 
 
 ```
 npm install -g node-inspector

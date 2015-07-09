@@ -257,6 +257,7 @@ exports.compileApp = function(req, res, next) {
                             performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, platform: params.platform, result: true}); 
                         }
                         else {
+                            // Compile the app
                             app.compile(params.platform, function(compiled) {
                                 performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, platform: params.platform, result: compiled});
                             });
