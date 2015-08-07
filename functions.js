@@ -121,21 +121,23 @@ exports.createApp = function(req, res, next) {
         Callback function for when createApp finishes (succesful or not).
         @param {App object} app - Optional.
     */
-    function createAppFinished(app, appId, appVersion) {
+    function createAppFinished(app, appId, appVersion, tag) {
         utils.log("createAppFinished", utils.logLevel.debug);
+        tag = (typeof tag === 'undefined') ? '' : tag;
         // handle error situation, when there is no app, create failed
         if (app) {
             app.getChecksum(function(checksum) {
-                performCallback("createApp", {checksum: checksum, app_uid: app.id, app_version: app.version});
+                performCallback("createApp", {checksum: checksum, app_uid: app.id, app_version: app.version, tag: tag});
             });
+        } else { 
+            performCallback("createApp", {checksum: null, app_uid: appId, app_version: appVersion, tag: tag});
         }
-        else performCallback("createApp", {checksum: null, app_uid: appId, app_version: appVersion});
     };
 
     var paramNames = [
         {"name": "app_uid", "required": true},
         {"name": "app_version", "required": true},
-        {"name": "config_xml", "required": true}
+        {"name": "tag", "required": false}
     ];
 
     var statusParams = prepareRequest(req, paramNames);
@@ -150,10 +152,10 @@ exports.createApp = function(req, res, next) {
 
     getApps(params.app_uid, params.app_version, function(apps) {
         if (apps.length) {
-            createAppFinished(apps[0], params.app_uid, params.app_version);
+            createAppFinished(apps[0], params.app_uid, params.app_version, params.tag);
         } else {
             utils.log("no app", utils.logLevel.debug);
-            createNewApp(params.app_uid, params.app_version, params.config_xml, createAppFinished);
+            createNewApp(params.app_uid, params.app_version, params.tag, createAppFinished);
         }
     });
     res.send(200, true);
@@ -182,7 +184,8 @@ exports.verifyApp = function(req, res, next) {
     var paramNames = [
         {"name": "app_uid", "required": true},
         {"name": "app_version", "required": true},
-        {"name": "checksum", "required": true}
+        {"name": "checksum", "required": true},
+        {"name": "tag", "required": false}
     ]
     var statusParams = prepareRequest(req, paramNames);
     var status = statusParams[0];
@@ -196,12 +199,12 @@ exports.verifyApp = function(req, res, next) {
     getApps(params.app_uid, params.app_version, function(apps) {
         if (apps && apps.length > 0) {
             var app = apps[0];
-            app.verify(params.checksum, function(verified) {
-                performCallback("verifyApp", {app_uid: app.id, app_version: app.version, result: verified});
+            app.verify(params.checksum, function(verified, appChecksum) {
+                performCallback("verifyApp", {app_uid: app.id, app_version: app.version, result: verified, checksum: appChecksum, tag: params.tag});
             });
         }
         else {
-            performCallback("verifyApp", {app_uid: params.app_uid, app_version: params.app_version, result: false});
+            performCallback("verifyApp", {app_uid: params.app_uid, app_version: params.app_version, result: false, checksum: 0, tag: params.tag});
         }
     });
     res.send(200, true);
@@ -233,7 +236,8 @@ exports.compileApp = function(req, res, next) {
         {"name": "app_uid", "required": true},
         {"name": "app_version", "required": true},
         {"name": "checksum", "required": true},
-        {"name": "platform", "required": true}
+        {"name": "platform", "required": true},
+        {"name": "tag", "required": false}
     ]
     var statusParams = prepareRequest(req, paramNames);
     var status = statusParams[0];
@@ -254,25 +258,26 @@ exports.compileApp = function(req, res, next) {
                         if (compiled) {
                             // Not sure if "compiled" in callback should be true or false here. App is compiled, but not as result of this request.
                             utils.log("app already compiled", utils.logLevel.debug);
-                            performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, platform: params.platform, result: true}); 
+                            exec_file_checksum
+                            performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, platform: params.platform, result: true, tag: params.tag}); 
                         }
                         else {
                             // Compile the app
                             app.compile(params.platform, function(compiled) {
-                                performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, platform: params.platform, result: compiled});
+                                performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, platform: params.platform, result: compiled, tag: params.tag});
                             });
                         }
                     });
                 }
                 else {
                     utils.log("wrong checksum for app", utils.logLevel.error);
-                    performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, platform: params.platform, result: false});
+                    performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, platform: params.platform, result: false, tag: params.tag});
                 }
             });
         }
         else {
             utils.log("no app found", utils.logLevel.error);
-            performCallback("compileApp", {app_uid: params.app_uid, app_version: params.app_version, checksum: null, platform: params.platform, result: false});
+            performCallback("compileApp", {app_uid: params.app_uid, app_version: params.app_version, checksum: null, platform: params.platform, result: false, tag: params.tag});
         }
     });
 
@@ -299,14 +304,15 @@ exports.getApp = function(req, res, next) {
         {"name": "app_uid", "required": true},
         {"name": "app_version", "required": true},
         {"name": "checksum", "required": true},
-        {"name": "platform", "required": true}
+        {"name": "platform", "required": true},
+        {"name": "tag", "required": false}
     ]
     var statusParams = prepareRequest(req, paramNames);
     var status = statusParams[0];
     var params = statusParams[1];
     var errorDescription = statusParams[2];
 
-    if (status!=200) {
+    if (status != 200) {
         res.send(status, errorDescription);
         return next()
     }
@@ -418,7 +424,7 @@ function getApps(appUid, appVersion, callback) {
     @param {String} configXML - Contents for config.xml file. Required.
     @param {Function} callback - Callback to call when done. Should accept parameter for App object created and app ID.
 */
-function createNewApp(appUid, appVersion, configXML, callback) {
+function createNewApp(appUid, appVersion, tag, callback) {
     utils.log("createNewApp " + appUid + " " + appVersion, utils.logLevel.debug);
 
     // Create directories in rsync share (inbox)
@@ -478,7 +484,7 @@ function createNewApp(appUid, appVersion, configXML, callback) {
                     //app.prepareProject();
                     app.symlinkProjectSource();
 					app.writeConfig(configXML, function() {
-						callback(app, appUid, appVersion);
+						callback(app, appUid, appVersion, tag);
 					});
 				});
 			});
@@ -494,6 +500,10 @@ function createNewApp(appUid, appVersion, configXML, callback) {
 
 /**
     Generic function to fetch a callback URL. The callback server is defined in config.callback_server.
+
+    Two partiular parameteres are added in this function
+        The first is passphrase, this = the config.key and is used on the other side (i.e. the mlab editor) to verif that the callback is executed by a proper server
+        The second one is "tag", this is attached to most, but not all, calls to the API, it is used to store variables between calls for the Mlab editor backend
     @param {String} callbackType - What callback to perform. Looks at CALLBACK_URIS to see what URI should be called. Allowed values: "createApp", "verifyApp", "compiledApp". Required.
     @param {Object} params - Get params to append to callback URL.
 */
@@ -507,7 +517,7 @@ function performCallback(callbackType, params) {
         port = 443;
     }
     var host = serverUrl.split("/")[2];
-    var path = CALLBACK_URIS[callbackType] + "?" + querystring.stringify(params);
+    var path = CALLBACK_URIS[callbackType] + "?passphrase=" + config.key + "&" + querystring.stringify(params);
     utils.log(host + path, utils.logLevel.debug);
     var options = {
         hostname: host,

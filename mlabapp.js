@@ -27,7 +27,8 @@ var config = utils.getConfig();
     @param {String} id - ID of app.
     @param {String} version - Version of app.
     @param {String} name - Name of app.
-    @param {Function} callback - Reading the compile manifesto file is an asynchronous operation, and is done as part of the initialization of the object. If we need to wait for this to be read before we proceed, we provide a callback that is called when manifesto file is read.
+    @param {Function} callback - Reading the compile manifesto file is an asynchronous operation, and is done as part of the initialization of the object. 
+                                 If we need to wait for this to be read before we proceed, we provide a callback that is called when manifesto file is read.
 */
 exports.App = function(id, version, name, callback) {
     this.id = id;
@@ -212,7 +213,7 @@ exports.App.prototype = {
         utils.log("verify", utils.logLevel.debug);
         this.getChecksum(function(appChecksum) {
             utils.log("verifying checksum " + appChecksum + " vs. " + checksum, utils.logLevel.debug);
-            callback(appChecksum===checksum);
+            callback(appChecksum===checksum, appChecksum);
         });
     },
 
@@ -289,8 +290,11 @@ exports.App.prototype = {
         utils.log("compile", utils.logLevel.debug);
         var app = this;
         utils.checkFileAndDo(app.getLockFilePath(platform), app.compile_check_interval, app.compile_check_max, "notexists", function(success) {
-            if (!success) callback(true);
-            else app.doCompile(platform, callback);
+            if (!success) {
+                callback(true);
+            } else {
+                app.doCompile(platform, callback);
+            }
         });
     },
     
