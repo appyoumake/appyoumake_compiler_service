@@ -467,7 +467,7 @@ function getApps(appUid, appVersion, callback) {
     Create a new Cordova app. Also writes a new config.xml file from given parameter. Does a callback with the new App object as parameter when done.
     @param {String} appUid - ID of app. Required.
     @param {String} appVersion - Version of app. Required.
-    @param {String} configXML - Contents for config.xml file. Required.
+    @param {String} tag - Info from calling function to return untouched
     @param {Function} callback - Callback to call when done. Should accept parameter for App object created and app ID.
 */
 function createNewApp(appUid, appVersion, tag, callback) {
@@ -531,9 +531,8 @@ function createNewApp(appUid, appVersion, tag, callback) {
                     //app.prepareProject();
 //next line creates a /www symlink in rsync upload folder
                     app.symlinkProjectSource();
-					app.writeConfig(configXML, function() {
-						callback(app, appUid, appVersion, tag);
-					});
+                    callback(app, appUid, appVersion, tag);
+					
 				});
 			});
 			create.stdout.on("data", function (data) {

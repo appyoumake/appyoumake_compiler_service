@@ -201,7 +201,7 @@ exports.App.prototype = {
         var source = path.join(this.getInboxPath(), 'www');
         var target = path.join(this.getPath(), 'www');
 
-        //TODO check if rsync folder is empty: if empty, move www folder from cordova to rsynk folder, if not delete www folder in cordova before symlinking
+        //TODO check if rsync folder is empty: if empty, move www folder from cordova to rsync folder, if not delete www folder in cordova before symlinking
         fs.rename(target, source, function(err) {
             if(err) utils.log("Error moving www folder before creating symlink" + err.message, utils.logLevel.error);
 
