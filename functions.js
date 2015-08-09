@@ -549,9 +549,7 @@ function createNewApp(appUid, appVersion, tag, callback) {
 /**
     Generic function to fetch a callback URL. The callback server is defined in config.callback_server.
 
-    Two partiular parameteres are added in this function
-        The first is passphrase, this = the config.key and is used on the other side (i.e. the mlab editor) to verif that the callback is executed by a proper server
-        The second one is "tag", this is attached to most, but not all, calls to the API, it is used to store variables between calls for the Mlab editor backend
+    The passphrase param is added here as it applies to all functions, this = the config.key and is used on the other side (i.e. the mlab editor) to verif that the callback is executed by a proper server
     @param {String} callbackType - What callback to perform. Looks at CALLBACK_URIS to see what URI should be called. Allowed values: "createApp", "verifyApp", "compiledApp". Required.
     @param {Object} params - Get params to append to callback URL.
 */
@@ -614,8 +612,8 @@ function checkPassPhrase(params) {
 function prepareRequest(req, paramNames) {
     var errorDescription = "";
     if (!checkPassPhrase(req.params)) {
-        errorDescription = "Bad passphrase";
-        utils.log("bad passphrase", utils.logLevel.error);
+        errorDescription = "Bad passphrase: " + req.params.passphrase;
+        utils.log("bad passphrase: " + req.params.passphrase, utils.logLevel.error);
         return [403, {}, errorDescription];
     }
     if (!paramNames) paramNames = [];
