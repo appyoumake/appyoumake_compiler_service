@@ -22,9 +22,9 @@ var utils = require('./utils.js');
 /* Constants */
 // Addresses for callbacks
 var CALLBACK_URIS = {
-    "createApp": "/callback/csAppCreated",
-    "verifyApp": "/callback/csAppVerified",
-    "compileApp": "/callback/csAppCompiled"
+    "createApp": "/callback/csAppCreated/",
+    "verifyApp": "/callback/csAppVerified/",
+    "compileApp": "/callback/csAppCompiled/"
 };
 
 // Setup some stuff

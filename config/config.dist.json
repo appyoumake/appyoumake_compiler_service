@@ -7,7 +7,7 @@
     "cordova_user": "mlab_cs",
     "key": "RLjYNDVQEh6fA*;zthtftc9m",
     "callback_server": "http://127.0.0.1",
-    "callback_server_port": 8081,
+    "callback_server_port": 80,
     "log_level": "DEBUG",
     "exclude_from_checksum": ["conf.json"],
     "os": "linux",
