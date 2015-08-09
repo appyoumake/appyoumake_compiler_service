@@ -599,7 +599,9 @@ function outputError(res, code, message) {
 */
 function checkPassPhrase(params) {
     var passphrase = null;
-    if ("passphrase" in params) passphrase = params.passphrase
+    if ("passphrase" in params) {
+        passphrase = decodeURIComponent(params.passphrase);
+    }
     return passphrase===config.key;
 };
 
@@ -620,7 +622,7 @@ function prepareRequest(req, paramNames) {
     var params = {};
     for (var i=0, ii=paramNames.length; i<ii; i++) {
         var paramName = paramNames[i];
-        params[paramName["name"]] = paramName["name"] in req.params ? req.params[paramName["name"]] : null;
+        params[paramName["name"]] = paramName["name"] in req.params ? decodeURIComponent(req.params[paramName["name"]]) : null;
         if (paramName["required"] && params[paramName["name"]]===null) {
             errorDescription = "Required parameter " + paramName["name"] + " is missing";
             return [400, {}, errorDescription];
