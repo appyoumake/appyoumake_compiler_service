@@ -9,6 +9,7 @@
     "callback_server": "http://127.0.0.1",
     "callback_server_port": 8081,
     "log_level": "DEBUG",
+    "exclude_from_checksum": ["conf.json"],
     "os": "linux",
     "platforms": ["android", "ios"],
     "environment": {},

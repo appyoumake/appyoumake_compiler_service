@@ -126,6 +126,7 @@ exports.createApp = function(req, res, next) {
         tag = (typeof tag === 'undefined') ? '' : tag;
         // handle error situation, when there is no app, create failed
         if (app) {
+//here we need 
             app.getChecksum(function(checksum) {
                 performCallback("createApp", {checksum: checksum, app_uid: app.id, app_version: app.version, tag: tag});
             });
@@ -258,26 +259,27 @@ exports.compileApp = function(req, res, next) {
                         if (compiled) {
                             // Not sure if "compiled" in callback should be true or false here. App is compiled, but not as result of this request.
                             utils.log("app already compiled", utils.logLevel.debug);
-                            exec_file_checksum
-                            performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, platform: params.platform, result: true, tag: params.tag}); 
+                            exec_file_checksum = app.getExecutableChecksum(params.platform);
+                            performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, checksum_exec_file: exec_file_checksum, platform: params.platform, result: true, tag: params.tag}); 
                         }
                         else {
                             // Compile the app
                             app.compile(params.platform, function(compiled) {
-                                performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, platform: params.platform, result: compiled, tag: params.tag});
+                                exec_file_checksum = app.getExecutableChecksum(params.platform);
+                                performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, checksum_exec_file: exec_file_checksum, platform: params.platform, result: compiled, tag: params.tag});
                             });
                         }
                     });
                 }
                 else {
                     utils.log("wrong checksum for app", utils.logLevel.error);
-                    performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, platform: params.platform, result: false, tag: params.tag});
+                    performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, checksum_exec_file: null, platform: params.platform, result: false, tag: params.tag});
                 }
             });
         }
         else {
             utils.log("no app found", utils.logLevel.error);
-            performCallback("compileApp", {app_uid: params.app_uid, app_version: params.app_version, checksum: null, platform: params.platform, result: false, tag: params.tag});
+            performCallback("compileApp", {app_uid: params.app_uid, app_version: params.app_version, checksum: null, checksum_exec_file: null, platform: params.platform, result: false, tag: params.tag});
         }
     });
 
@@ -438,7 +440,8 @@ function createNewApp(appUid, appVersion, tag, callback) {
         fs.mkdir(projectInboxPath, function(err) {
             if (err) utils.log("Error createNewApp: " + err.message, utils.logLevel.error);
 
-            // Creating www folder, is moved to symlink
+            //TODO: CHECK THIS Creating www folder, is moved to symlink
+            // 
             //fs.mkdir(path.join(projectInboxPath,'www'), function(err) {
             //    if (err) utils.log("Error createNewApp www folder: " + err.message, utils.logLevel.error);
             //});
@@ -482,6 +485,7 @@ function createNewApp(appUid, appVersion, tag, callback) {
 				getApps(appUid, appVersion, function(apps) {
 					var app = apps[0];
                     //app.prepareProject();
+//next line creates a /www symlink in rsync upload folder
                     app.symlinkProjectSource();
 					app.writeConfig(configXML, function() {
 						callback(app, appUid, appVersion, tag);

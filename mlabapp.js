@@ -10,6 +10,8 @@
 
 // Add Node modules
 var fs = require("fs");
+var md5File = require("md5-file");
+var md5 = require("md5");
 var path = require("path");
 var child_process = require("child_process");
 var xmldoc = require("xmldoc");
@@ -41,7 +43,8 @@ exports.App = function(id, version, name, callback) {
         this.platforms[config.platforms[i]] = {
             compiled: false,
             compiledDate: null,
-            checksumCompiled: null
+            checksumCompiled: null,
+            checksumExecFile: null
         };
     }
     this.checksum = null;
@@ -145,62 +148,31 @@ exports.App.prototype = {
 
     /**
         Calculated an md5 checksum for the www directory within the Cordova app. Does a callback with the checksum as parameter when done.
+        The calculation is as follows: generate checksum for each file in folder, including subfolders. Store in array, sort array, then merge into single sting, and MD5 that.
         @param {Function} callback - Callback function to call when checksum is calculated. Should accept a single parameter for checksum. Required.
     */
     getChecksum: function(callback) {
         utils.log("getChecksum", utils.logLevel.debug);
         var app = this;
-        // Making a checksum from an entire directory isn't trivial. Taring to 
-        // one file, and getting checksum from that.
-        // http://unix.stackexchange.com/questions/35832/how-do-i-get-the-md5-sum-of-a-directorys-contents-as-one-sum
         
-        // Path to temporary tar file
-        var tempFilePath = path.join(process.cwd(), "temp-" + app.id  + ".tar");
-        // Build argument list
-        var args = [];
-        args.push("-cf");
-        args.push(tempFilePath);
-        args.push(path.join(app.getPath(), "www"));
-        // Tar the www directory to temp file
-        var tar = child_process.spawn("tar", args, {env: environment, uid: utils.getUid(), gid: utils.getGid()});
-
-
-        tar.on("close", function(code) {
-            // If tar failed, do callback with null
-            if (code!==0) return callback(null);
-            // Tar went OK, now calculate md5 sum for tar file
-            var md5cmd = "";
-            var md5args = [tempFilePath];
-            if (config.os==="linux") {
-                md5cmd = "md5sum";
+        var app_path = path.join(app.getPath());
+        
+        utils.walkDir(app_path, config.exclude_from_checksum, function(err, results) {
+            if (err) throw err;
+            var md5sums = [];
+            for (i in results) {
+                md5sums.push(md5File(results[i]));
             }
-            else if (config.os==="osx") {
-                md5cmd = "md5";
-            }
-            var checksum = child_process.spawn(md5cmd, md5args, {env: environment, uid: utils.getUid(), gid: utils.getGid()});
-            checksum.stdout.on("data", function(data) {
-                data = data.toString();
-                // The return value contains the file path, etc. Remove this.
-                utils.log("checksum output: "+data);
-                data = data.split(" ");
-                if (config.os==="linux") data = data[0];
-                else if (config.os==="osx") data = data[data.length-1];
-                data = data.trim();
-                // Store the result
-                app.checksum = data;
-                app.checksumDate = new Date();
-                // A-OK. Do callback.
-                utils.log("checksum: " + data, utils.logLevel.debug);
-                callback(data);
-                // Remove temp file
-                child_process.spawn("rm", [tempFilePath], {env: environment, uid: utils.getUid(), gid: utils.getGid()});
-            });
-            checksum.stderr.on("data", function (data) {
-                utils.log("stderr App.getChecksum md5cmd: " + data, utils.logLevel.error);
-            });
-        });
-        tar.stderr.on("data", function (data) {
-            utils.log("stderr App.getChecksum tar: " + data, utils.logLevel.error);
+//
+            md5sums.sort();
+            var global_md5 = md5(md5sums.join(""));
+            
+            app.checksum = global_md5;
+            app.checksumDate = new Date();
+//Got checksum, do callback.
+            utils.log("checksum: " + global_md5, utils.logLevel.debug);
+            callback(global_md5);
+
         });
     },
     
@@ -393,6 +365,7 @@ exports.App.prototype = {
         app.platforms[platform].compiled = true;
         app.platforms[platform].compiledDate = new Date();
         app.platforms[platform].checksumCompiled = app.checksum;
+        app.platforms[platform].checksumExecFile = app.checksum;
         utils.log("writing manifesto", utils.logLevel.debug);
         app.writeCompileManifesto(function() {
             callback(true);
@@ -482,6 +455,27 @@ exports.App.prototype = {
                 });
             }
         });
+    },
+    
+/**
+ * Finds executable file for relevant platform and returns checksum
+ * @param {type} platform
+ * @returns {Boolean}
+ */
+    getExecutableChecksum: function(platform) {
+        var app = this;
+        var dirPath = app.getExecutableDirPath(platform);
+        var extension = app.platform_exec_extensions[platform];
+        fs.readdir(dirPath, function(err, files) {
+            if (err) return callback(null);
+            var execFile;
+            for (var i = 0, ii = files.length; i < ii; i++) {
+                utils.log(files[i]);
+                if (!files[i].endsWith(extension)) continue;
+                return md5File(path.join(dirPath, files[i]));
+            }
+        });
+        return false;
     },
     
     /**
