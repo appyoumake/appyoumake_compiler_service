@@ -72,7 +72,8 @@ exports.getAppStatus = function(req, res, next) {
     var params = statusParams[1];
     var errorDescription = statusParams[2];
 
-    if (status!=200) {
+    if (status != 200) {
+        utils.log("Error: " + errorDescription, utils.logLevel.debug);
         res.send(status, errorDescription);
         return next()
     }
@@ -116,7 +117,8 @@ exports.getExecChecksum = function(req, res, next) {
     var params = statusParams[1];
     var errorDescription = statusParams[2];
 
-    if (status!=200) {
+    if (status != 200) {
+        utils.log("Error: " + errorDescription, utils.logLevel.debug);
         res.send(status, errorDescription);
         return next()
     }
@@ -190,7 +192,7 @@ exports.createApp = function(req, res, next) {
     var params = statusParams[1];
     var errorDescription = statusParams[2];
     
-    if (status!==200) {
+    if (status != 200) {
         res.send(status, "Error in prepareRequest: " + errorDescription);
         return next()
     }
@@ -237,7 +239,8 @@ exports.verifyApp = function(req, res, next) {
     var params = statusParams[1];
     var errorDescription = statusParams[2];
 
-    if (status!=200) {
+    if (status != 200) {
+        utils.log("Error: " + errorDescription, utils.logLevel.debug);
         res.send(status, errorDescription);
         return next()
     }
@@ -290,6 +293,7 @@ exports.compileApp = function(req, res, next) {
     var errorDescription = statusParams[2];
 
     if (status != 200) {
+        utils.log("Error: " + errorDescription, utils.logLevel.debug);
         res.send(status, errorDescription);
         return next()
     }
@@ -359,6 +363,7 @@ exports.getApp = function(req, res, next) {
     var errorDescription = statusParams[2];
 
     if (status != 200) {
+        utils.log("Error: " + errorDescription, utils.logLevel.debug);
         res.send(status, errorDescription);
         return next()
     }

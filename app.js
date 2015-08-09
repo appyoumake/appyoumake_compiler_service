@@ -22,9 +22,9 @@
         
         Then call API:
             GET <your server>/getAppStatus?
-            POST <your server>/createApp
+            GET <your server>/createApp
             GET <your server>/verifyApp?
-            POST <your server>/compileApp
+            GET <your server>/compileApp
             GET <your server>/getApp?
     
     Docs:
