@@ -68,9 +68,9 @@ server.use(restify.bodyParser({mapParams: true}));
 */
 server.get({path: "/getAppStatus", version: "1"}, functions.getAppStatus);
 /**
-    POST createApp
+    GET createApp
 */
-server.post({path: "/createApp", version: "1"}, functions.createApp);
+server.get({path: "/createApp", version: "1"}, functions.createApp);
 /**
     GET verifyApp
 */
@@ -78,7 +78,11 @@ server.get({path: "/verifyApp", version: "1"}, functions.verifyApp);
 /**
     POST compileApp
 */
-server.post({path: "/compileApp", version: "1"}, functions.compileApp);
+server.get({path: "/compileApp", version: "1"}, functions.compileApp);
+/**
+    GET getExecChecksum
+*/
+server.get({path: "/getExecChecksum", version: "1"}, functions.getApp);
 /**
     GET getApp
 */

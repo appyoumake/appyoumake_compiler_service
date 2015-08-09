@@ -98,6 +98,50 @@ exports.getAppStatus = function(req, res, next) {
 };
 
 /**
+ * Returns the checksum of the currently compiled executable, allows us to verify downloads
+ * @param {type} req
+ * @param {type} res
+ * @param {type} next
+ * @returns {unresolved}
+ */
+exports.getExecChecksum = function(req, res, next) {
+    utils.log("getAppStatus", utils.logLevel.debug);
+    var paramNames = [
+        {"name": "app_uid", "required": true},
+        {"name": "app_version", "required": true},
+        {"name": "platform", "required": true}
+    ]
+    var statusParams = prepareRequest(req, paramNames);
+    var status = statusParams[0];
+    var params = statusParams[1];
+    var errorDescription = statusParams[2];
+
+    if (status!=200) {
+        res.send(status, errorDescription);
+        return next()
+    }
+    getApps(params.app_uid, params.app_version, function(apps) {
+        var appsObj = {};
+        for (var i=0, ii=apps.length; i<ii; i++) {
+            var app = apps[i];
+            if (!(app.id in appsObj)) appsObj[app.id] = {};
+            var appObj = {};
+            var compiledInfo = app.getCompiledInfo(params.platform);
+            for (platform in compiledInfo) {
+                appObj[platform] = {
+                    compiled: compiledInfo[platform].compiled,
+                    compiled_date: compiledInfo[platform].compiledDate
+                };
+            }
+            appsObj[app.id][app.version] = appObj;
+        }
+        
+        res.send(200, appsObj.app.getExecutableChecksum(params.platform));
+    });
+    return next();
+};
+
+/**
     Create a new Cordova app. This is an asynchronous function, in that it always returns true, and fetches a callback URL when done. If app already 
     exists, fetch callback URL with app info as if it was created by this call.
     Parameters in request:
@@ -245,7 +289,7 @@ exports.compileApp = function(req, res, next) {
     var params = statusParams[1];
     var errorDescription = statusParams[2];
 
-    if (status!=200) {
+    if (status != 200) {
         res.send(status, errorDescription);
         return next()
     }
