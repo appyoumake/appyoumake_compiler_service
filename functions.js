@@ -557,7 +557,8 @@ function performCallback(callbackType, params) {
     utils.log("performCallback " + callbackType, utils.logLevel.debug);
     var serverUrl = config.callback_server;
     var transport = http;
-    var port = config.callback_server_port;
+    port = (typeof config.callback_server_port != "undefined" ? config.callback_server_port : 80);
+    
     if (serverUrl.slice(0,5)==="https") {
         transport = https;
         port = 443;
