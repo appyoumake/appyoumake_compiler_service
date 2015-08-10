@@ -159,6 +159,7 @@ exports.App.prototype = {
         
         utils.walkDir(app_path, config.exclude_from_checksum, function(err, results) {
             if (err) throw err;
+console.log(results);
             var md5sums = [];
             for (i in results) {
                 md5sums.push(md5File(results[i]));
