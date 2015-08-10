@@ -155,7 +155,7 @@ exports.App.prototype = {
         utils.log("getChecksum", utils.logLevel.debug);
         var app = this;
         
-        var app_path = path.join(app.getPath());
+        var app_path = path.join(app.getInboxPath());
         
         utils.walkDir(app_path, config.exclude_from_checksum, function(err, results) {
             if (err) throw err;
