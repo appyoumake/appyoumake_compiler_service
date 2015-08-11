@@ -128,8 +128,11 @@ exports.App.prototype = {
     */
     getExecutableDirPath: function(platform) {
         var dirPath = "";
-        if (platform==="android") dirPath = path.join(this.getPlatformPath(platform), config.android.executable_path)
-        else if (platform==="ios") dirPath = path.join(this.getPlatformPath(platform), config.ios.executable_path);
+        if (platform === "android") {
+            dirPath = path.join(this.getPlatformPath(platform), config.android.executable_path)
+        } else if (platform === "ios") {
+            dirPath = path.join(this.getPlatformPath(platform), config.ios.executable_path);
+        }
         return dirPath;
     },
 
@@ -366,7 +369,7 @@ console.log(results);
         app.platforms[platform].compiled = true;
         app.platforms[platform].compiledDate = new Date();
         app.platforms[platform].checksumCompiled = app.checksum;
-        app.platforms[platform].checksumExecFile = app.checksum;
+        app.platforms[platform].checksumExecFile = app.checksumExecFile;
         utils.log("writing manifesto", utils.logLevel.debug);
         app.writeCompileManifesto(function() {
             callback(true);
@@ -439,23 +442,21 @@ console.log(results);
         var mime = app.platform_exec_mime_types[platform];
         utils.log(extension);
         utils.log(mime);
-        fs.readdir(dirPath, function(err, files) {
-            if (err) return callback(null);
-            var execFile;
-            for (var i=0, ii=files.length; i<ii; i++) {
-                utils.log(files[i]);
-                if (!files[i].endsWith(extension)) continue;
-                utils.log("yes!");
-                fs.readFile(path.join(dirPath, files[i]), function(err, data) {
-                    if (err) utils.log("read file error: " + err, utils.logLevel.error);
+        var filePath = app.getExecutableDirPath(platform) + "/" + config.platforms[platform].compiled_filename + "." + app.platform_exec_extensions[platform];
+        utils.log("File to download: " + filePath);
+        if (fs.existsSync(filePath)) {
+            fs.readFile(filePath, function(err, data) {
+                    if (err) {
+                        utils.log("read file " + filePath + " error: " + err, utils.logLevel.error);
+                    }
                     if (data) {
-                        var file = data.toString();
-                        return callback(file, app.getExecFileName(platform), mime);
+                        //var file = data.toString();
+                        return callback(data, app.getExecFileName(platform), mime);
                     }
                     return callback(null);
                 });
             }
-        });
+        }
     },
     
 /**
@@ -465,18 +466,8 @@ console.log(results);
  */
     getExecutableChecksum: function(platform) {
         var app = this;
-        var dirPath = app.getExecutableDirPath(platform);
-        var extension = app.platform_exec_extensions[platform];
-        fs.readdir(dirPath, function(err, files) {
-            if (err) return callback(null);
-            var execFile;
-            for (var i = 0, ii = files.length; i < ii; i++) {
-                utils.log(files[i]);
-                if (!files[i].endsWith(extension)) continue;
-                return md5File(path.join(dirPath, files[i]));
-            }
-        });
-        return false;
+        var filePath = app.getExecutableDirPath(platform) + "/" + config.platforms[platform].compiled_filename + "." + app.platform_exec_extensions[platform];
+        return md5File(filePath);
     },
     
     /**

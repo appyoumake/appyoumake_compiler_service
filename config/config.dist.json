@@ -18,7 +18,8 @@
             "ANDROID_HOME": "/opt/android-sdk/",
             "JAVA_HOME": "/usr/lib/jvm/java-8-oracle/jre/"
         },
-        "executable_path": "build/outputs/apk/"
+        "executable_path": "build/outputs/apk/",
+        "compiled_filename": "android-debug"
     },
     "ios": {
         "provisioning_profile": "MLAB dev",
