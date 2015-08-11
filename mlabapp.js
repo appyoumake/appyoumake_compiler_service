@@ -446,16 +446,15 @@ console.log(results);
         utils.log("File to download: " + filePath);
         if (fs.existsSync(filePath)) {
             fs.readFile(filePath, function(err, data) {
-                    if (err) {
-                        utils.log("read file " + filePath + " error: " + err, utils.logLevel.error);
-                    }
-                    if (data) {
-                        //var file = data.toString();
-                        return callback(data, app.getExecFileName(platform), mime);
-                    }
-                    return callback(null);
-                });
-            }
+                if (err) {
+                    utils.log("read file " + filePath + " error: " + err, utils.logLevel.error);
+                }
+                if (data) {
+                    //var file = data.toString();
+                    return callback(data, app.getExecFileName(platform), mime);
+                }
+                return callback(null);
+            });
         }
     },
     
