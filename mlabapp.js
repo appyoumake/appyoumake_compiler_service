@@ -463,8 +463,10 @@ exports.App.prototype = {
  * @returns {Boolean}
  */
     getExecutableChecksum: function(platform) {
+        utils.log("getExecutableChecksum", utils.logLevel.debug);
         var app = this;
         var filePath = app.getExecutableDirPath(platform) + "/" + config.platforms[platform].compiled_filename + "." + app.platform_exec_extensions[platform];
+        utils.log("filepath = " + filePath, utils.logLevel.debug);
         return md5File(filePath);
     },
     

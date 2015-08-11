@@ -312,8 +312,7 @@ exports.compileApp = function(req, res, next) {
                             utils.log("app already compiled", utils.logLevel.debug);
                             exec_file_checksum = app.getExecutableChecksum(params.platform);
                             performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, checksum_exec_file: exec_file_checksum, platform: params.platform, result: true, tag: params.tag}); 
-                        }
-                        else {
+                        } else {
                             // Compile the app
                             app.compile(params.platform, function(compiled) {
                                 exec_file_checksum = app.getExecutableChecksum(params.platform);
