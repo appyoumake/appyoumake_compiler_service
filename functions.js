@@ -249,6 +249,7 @@ exports.verifyApp = function(req, res, next) {
     getApps(params.app_uid, params.app_version, function(apps) {
         if (apps && apps.length > 0) {
             var app = apps[0];
+            utils.log("Incoming checksum: " + params.checksum);
             app.verify(params.checksum, function(verified, appChecksum) {
                 performCallback("verifyApp", {app_uid: app.id, app_version: app.version, result: verified, checksum: appChecksum, tag: params.tag});
             });
