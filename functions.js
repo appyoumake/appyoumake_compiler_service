@@ -463,7 +463,10 @@ function getApps(appUid, appVersion, callback) {
                     apps.push(app);
                     // Only when these counters match, do we know that we are 
                     // done traversing
-                    if (apps.length==appPaths.length) callback(apps);
+                    if (apps.length==appPaths.length) {
+                        utils.log(apps, utils.logLevel.debug);
+                        callback(apps);
+                    }
                 });
             }
         });
