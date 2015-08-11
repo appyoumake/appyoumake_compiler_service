@@ -174,10 +174,12 @@ exports.createApp = function(req, res, next) {
         if (app) {
 //here we need 
             app.getChecksum(function(checksum) {
-                performCallback("createApp", {checksum: checksum, app_uid: app.id, app_version: app.version, tag: tag});
+                utils.log("callback with success", utils.logLevel.debug);
+                performCallback("createApp", {result: "true", app_uid: app.id, app_version: app.version, tag: tag});
             });
         } else { 
-            performCallback("createApp", {checksum: null, app_uid: appId, app_version: appVersion, tag: tag});
+            utils.log("callback with failure", utils.logLevel.debug);
+            performCallback("createApp", {result: "false", app_uid: appId, app_version: appVersion, tag: tag});
         }
     };
 
