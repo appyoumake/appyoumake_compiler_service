@@ -54,9 +54,8 @@ exports.App = function(id, version, name, callback) {
     this.compiledDate = null;
     this.checksumCompiled = null;
 */
-    
-    
-    // If a compilation process is already in progress, how long should we wait 
+
+// If a compilation process is already in progress, how long should we wait 
     // until we try again
     this.compile_check_interval = 1000; // 1 second
     // How long should we wait until we give up
@@ -441,7 +440,7 @@ exports.App.prototype = {
         var mime = app.platform_exec_mime_types[platform];
         utils.log(extension);
         utils.log(mime);
-        var filePath = app.getExecutableDirPath(platform) + "/" + config.platforms[platform].compiled_filename + "." + app.platform_exec_extensions[platform];
+        var filePath = app.getExecutableDirPath(platform) + "/" + config[platform].compiled_filename + "." + app.platform_exec_extensions[platform];
         utils.log("File to download: " + filePath);
         if (fs.existsSync(filePath)) {
             fs.readFile(filePath, function(err, data) {
@@ -465,7 +464,7 @@ exports.App.prototype = {
     getExecutableChecksum: function(platform) {
         utils.log("getExecutableChecksum", utils.logLevel.debug);
         var app = this;
-        var filePath = app.getExecutableDirPath(platform) + "/" + config.platforms[platform].compiled_filename + "." + app.platform_exec_extensions[platform];
+        var filePath = app.getExecutableDirPath(platform) + "/" + config[platform].compiled_filename + "." + app.platform_exec_extensions[platform];
         utils.log("filepath = " + filePath, utils.logLevel.debug);
         return md5File(filePath);
     },
