@@ -108,7 +108,7 @@ exports.getAppStatus = function(req, res, next) {
  * @returns {unresolved}
  */
 exports.getExecChecksum = function(req, res, next) {
-    utils.log("getAppStatus", utils.logLevel.debug);
+    utils.log("getExecChecksum", utils.logLevel.debug);
     var paramNames = [
         {"name": "app_uid", "required": true},
         {"name": "app_version", "required": true},
