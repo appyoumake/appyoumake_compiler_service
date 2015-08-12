@@ -75,8 +75,9 @@ exports.getAppStatus = function(req, res, next) {
     if (status != 200) {
         utils.log("Error: " + errorDescription, utils.logLevel.debug);
         res.send(status, errorDescription);
-        return next()
+        return next();
     }
+    
     getApps(params.app_uid, params.app_version, function(apps) {
         var appsObj = {};
         for (var i=0, ii=apps.length; i<ii; i++) {
@@ -122,24 +123,10 @@ exports.getExecChecksum = function(req, res, next) {
         res.send(status, errorDescription);
         return next()
     }
-    getApps(params.app_uid, params.app_version, function(apps) {
-        var appsObj = {};
-        for (var i=0, ii=apps.length; i<ii; i++) {
-            var app = apps[i];
-            if (!(app.id in appsObj)) appsObj[app.id] = {};
-            var appObj = {};
-            var compiledInfo = app.getCompiledInfo(params.platform);
-            for (platform in compiledInfo) {
-                appObj[platform] = {
-                    compiled: compiledInfo[platform].compiled,
-                    compiled_date: compiledInfo[platform].compiledDate
-                };
-            }
-            appsObj[app.id][app.version] = appObj;
-        }
-        
-        res.send(200, appsObj.app.getExecutableChecksum(params.platform));
-    });
+    
+    var execFilename = path.join(config.cordova_apps_path, params.platform, params.id, params.version, config[params.platform].executable_path) + config[params.platform].compiled_filename;
+    var checksum = md5File(execFilename)
+    res.send(200, checksum);
     return next();
 };
 
@@ -463,7 +450,7 @@ function getApps(appUid, appVersion, callback) {
                     apps.push(app);
                     // Only when these counters match, do we know that we are 
                     // done traversing
-                    if (apps.length==appPaths.length) {
+                    if (apps.length == appPaths.length) {
                         utils.log(apps, utils.logLevel.debug);
                         callback(apps);
                     }
@@ -492,13 +479,9 @@ function createNewApp(appUid, appVersion, tag, callback) {
         // Create version folder
         projectInboxPath = path.join(projectInboxPath, appVersion);
         fs.mkdir(projectInboxPath, function(err) {
-            if (err) utils.log("Error createNewApp: " + err.message, utils.logLevel.error);
-
-            //TODO: CHECK THIS Creating www folder, is moved to symlink
-            // 
-            //fs.mkdir(path.join(projectInboxPath,'www'), function(err) {
-            //    if (err) utils.log("Error createNewApp www folder: " + err.message, utils.logLevel.error);
-            //});
+            if (err) {
+                utils.log("Error createNewApp: " + err.message, utils.logLevel.error);
+            }
         });
     });
 
