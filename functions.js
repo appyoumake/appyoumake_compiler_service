@@ -125,7 +125,7 @@ exports.getExecChecksum = function(req, res, next) {
         return next()
     }
     
-    var execFilename = path.join(config.cordova_apps_path, params.app_uid, params.app_version, "platforms", params.platform, config[params.platform].executable_path) + config[params.platform].compiled_filename;
+    var execFilename = path.join(config.cordova_apps_path, params.app_uid, params.app_version, "platforms", params.platform, config[params.platform].executable_path) + config[params.platform].compiled_filename + ".apk";
     var checksum = md5File(execFilename)
     res.send(200, checksum);
     return true;
