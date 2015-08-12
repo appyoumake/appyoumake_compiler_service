@@ -82,7 +82,7 @@ server.get({path: "/compileApp", version: "1"}, functions.compileApp);
 /**
     GET getExecChecksum
 */
-server.get({path: "/getExecChecksum", version: "1"}, functions.getApp);
+server.get({path: "/getExecChecksum", version: "1"}, functions.getExecChecksum);
 /**
     GET getApp
 */

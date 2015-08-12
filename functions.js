@@ -10,6 +10,7 @@
 // Add Node modules
 var fs = require("fs");
 var path = require("path");
+var md5File = require("md5-file");
 var child_process = require("child_process");
 var http = require("http");
 var https = require("https");
@@ -127,7 +128,7 @@ exports.getExecChecksum = function(req, res, next) {
     var execFilename = path.join(config.cordova_apps_path, params.app_uid, params.version, "platforms", params.platform, config[params.platform].executable_path) + config[params.platform].compiled_filename;
     var checksum = md5File(execFilename)
     res.send(200, checksum);
-    return next();
+    return true;
 };
 
 /**
