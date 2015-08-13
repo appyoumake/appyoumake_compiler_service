@@ -55,22 +55,6 @@ exports.App = function(id, version, name, callback) {
     this.checksumCompiled = null;
 */
 
-// If a compilation process is already in progress, how long should we wait 
-    // until we try again
-    this.compile_check_interval = 1000; // 1 second
-    // How long should we wait until we give up
-    this.compile_check_max = 60000; // 1 minute
-    // File extensions for execeutable files
-    this.platform_exec_extensions = {
-        "android": "apk",
-        "ios": "ipa"
-    };
-    // Mime types for executable files
-    this.platform_exec_mime_types = {
-        "android": "application/vnd.android.package-archive",
-        "ios": "application/octet-stream"
-    };
-    
     var app = this;
     // Read the compile manifesto file
     this.readCompileManifesto(function() {
@@ -127,11 +111,7 @@ exports.App.prototype = {
     */
     getExecutableDirPath: function(platform) {
         var dirPath = "";
-        if (platform === "android") {
-            dirPath = path.join(this.getPlatformPath(platform), config.android.executable_path)
-        } else if (platform === "ios") {
-            dirPath = path.join(this.getPlatformPath(platform), config.ios.executable_path);
-        }
+        dirPath = path.join(this.getPlatformPath(platform), config[platform].executable_path)
         return dirPath;
     },
 
@@ -145,7 +125,7 @@ exports.App.prototype = {
         @returns {String} File name to be returned in response.
     */
     getExecFileName: function(platform) {
-        return this.name + "-v" + this.version + "." + this.platform_exec_extensions[platform];
+        return this.name + "-v" + this.version + "." + config[platform].executable_extension;
     },
 
     /**
@@ -263,7 +243,7 @@ exports.App.prototype = {
     compile: function(platform, callback) {
         utils.log("compile", utils.logLevel.debug);
         var app = this;
-        utils.checkFileAndDo(app.getLockFilePath(platform), app.compile_check_interval, app.compile_check_max, "notexists", function(success) {
+        utils.checkFileAndDo(app.getLockFilePath(platform), config.compile_check_interval, config.compile_check_max, "notexists", function(success) {
             if (!success) {
                 callback(true);
             } else {
@@ -436,11 +416,11 @@ exports.App.prototype = {
     getExecutable: function(platform, callback) {
         var app = this;
         var dirPath = app.getExecutableDirPath(platform);
-        var extension = app.platform_exec_extensions[platform];
-        var mime = app.platform_exec_mime_types[platform];
+        var extension = config[platform].executable_extension;
+        var mime = config[platform].executable_mime_type;
         utils.log(extension);
         utils.log(mime);
-        var filePath = app.getExecutableDirPath(platform) + "/" + config[platform].compiled_filename + "." + app.platform_exec_extensions[platform];
+        var filePath = app.getExecutableDirPath(platform) + "/" + config[platform].executable_filename + "." + config[platform].executable_extension;
         utils.log("File to download: " + filePath);
         if (fs.existsSync(filePath)) {
             fs.readFile(filePath, function(err, data) {
@@ -464,7 +444,7 @@ exports.App.prototype = {
     getExecutableChecksum: function(platform) {
         utils.log("getExecutableChecksum", utils.logLevel.debug);
         var app = this;
-        var filePath = app.getExecutableDirPath(platform) + "/" + config[platform].compiled_filename + "." + app.platform_exec_extensions[platform];
+        var filePath = app.getExecutableDirPath(platform) + "/" + config[platform].executable_filename + "." + config[platform].executable_extension;
         utils.log("filepath = " + filePath, utils.logLevel.debug);
         return md5File(filePath);
     },

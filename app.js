@@ -64,27 +64,27 @@ server.use(restify.bodyParser({mapParams: true}));
 
 // Set up paths
 /**
-    GET getAppStatus
+    GET getAppStatus (sync, not async), returns an array of objects which = associative array of app info
 */
 server.get({path: "/getAppStatus", version: "1"}, functions.getAppStatus);
 /**
-    GET createApp
+    GET createApp, runs the cordova create function
 */
 server.get({path: "/createApp", version: "1"}, functions.createApp);
 /**
-    GET verifyApp
+    GET verifyApp, checks if checksum of source code here is same as on calling client
 */
 server.get({path: "/verifyApp", version: "1"}, functions.verifyApp);
 /**
-    POST compileApp
+    POST compileApp, runs the cordova comilation function
 */
 server.get({path: "/compileApp", version: "1"}, functions.compileApp);
 /**
-    GET getExecChecksum
+    GET getExecChecksum (sync, not async), shortcut to get the checksum of the currently compiled executable
 */
 server.get({path: "/getExecChecksum", version: "1"}, functions.getExecChecksum);
 /**
-    GET getApp
+    GET getApp, requests the executable for download
 */
 server.get({path: "/getApp", version: "1"}, functions.getApp);
 

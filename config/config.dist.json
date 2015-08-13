@@ -11,6 +11,8 @@
     "log_level": "DEBUG",
     "exclude_from_checksum": ["conf.json"],
     "os": "linux",
+    "compile_check_interval": 1000, 
+    "compile_check_max": 60000,
     "platforms": ["android", "ios"],
     "environment": {},
     "android": {
@@ -19,10 +21,14 @@
             "JAVA_HOME": "/usr/lib/jvm/java-8-oracle/jre/"
         },
         "executable_path": "build/outputs/apk/",
-        "compiled_filename": "android-debug"
+        "executable_filename": "android-debug",
+        "executable_extension": "apk",
+        "executable_mime_type": "application/vnd.android.package-archive"
     },
     "ios": {
         "provisioning_profile": "MLAB dev",
-        "executable_path": "out"
+        "executable_path": "out",
+        "executable_extension": "ipa",
+        "executable_mime_type": "application/octet-stream"
     }
 }
