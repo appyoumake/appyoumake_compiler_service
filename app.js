@@ -87,7 +87,10 @@ server.get({path: "/getExecChecksum", version: "1"}, functions.getExecChecksum);
     GET getApp, requests the executable for download
 */
 server.get({path: "/getApp", version: "1"}, functions.getApp);
-
+/**
+    GET testCode, simple wrapper to check code without compiling
+*/
+server.get({path: "/testCode", version: "1"}, functions.testCode);
 
 // Start listening
 server.listen(config.port_number ,config.listen_on_ip, function(){

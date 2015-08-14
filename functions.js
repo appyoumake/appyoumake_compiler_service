@@ -15,6 +15,7 @@ var child_process = require("child_process");
 var http = require("http");
 var https = require("https");
 var querystring = require("querystring");
+var xml2js = require("xml2js");
 
 // Mlab modules
 var mlabapp = require("./mlabapp.js");
@@ -79,7 +80,7 @@ exports.getAppStatus = function(req, res, next) {
         return next();
     }
     
-    getApps(params.app_uid, params.app_version, function(apps) {
+    loadAppsInfo(params.app_uid, params.app_version, function(apps) {
         var appsObj = {};
         for (var i=0, ii=apps.length; i<ii; i++) {
             var app = apps[i];
@@ -125,10 +126,16 @@ exports.getExecChecksum = function(req, res, next) {
         return next()
     }
     
-    var execFilename = path.join(config.cordova_apps_path, params.app_uid, params.app_version, "platforms", params.platform, config[params.platform].executable_path) + config[params.platform].executable_filename + "." + onfig[params.platform].executable_extension;
-    var checksum = md5File(execFilename)
-    res.send(200, checksum);
-    return true;
+    loadAppsInfo(params.app_uid, params.app_version, function(apps) {
+        if (apps) {
+            var app = apps[0];
+            var checksum = app.getExecutableChecksum();
+            utils.log("Executable checksum: " + checksum, utils.logLevel.debug);
+            res.send(200, checksum);
+        } else {
+            res.send(404);
+        }
+    });
 };
 
 /**
@@ -187,7 +194,7 @@ exports.createApp = function(req, res, next) {
         return next()
     }
 
-    getApps(params.app_uid, params.app_version, function(apps) {
+    loadAppsInfo(params.app_uid, params.app_version, function(apps) {
         if (apps.length) {
             createAppFinished(apps[0], params.app_uid, params.app_version, params.tag);
         } else {
@@ -234,7 +241,7 @@ exports.verifyApp = function(req, res, next) {
         res.send(status, errorDescription);
         return next()
     }
-    getApps(params.app_uid, params.app_version, function(apps) {
+    loadAppsInfo(params.app_uid, params.app_version, function(apps) {
         if (apps && apps.length > 0) {
             var app = apps[0];
             utils.log("Incoming checksum: " + params.checksum);
@@ -289,7 +296,7 @@ exports.compileApp = function(req, res, next) {
         return next()
     }
 
-    getApps(params.app_uid, params.app_version, function(apps) {
+    loadAppsInfo(params.app_uid, params.app_version, function(apps) {
         if (apps) {
             var app = apps[0];
             app.verify(params.checksum, function(verified) {
@@ -358,7 +365,7 @@ exports.getApp = function(req, res, next) {
         return next()
     }
     
-    getApps(params.app_uid, params.app_version, function(apps) {
+    loadAppsInfo(params.app_uid, params.app_version, function(apps) {
         if (apps) {
             var app = apps[0];
             app.verify(params.checksum, function(verified) {
@@ -395,6 +402,70 @@ exports.getApp = function(req, res, next) {
     return next();
 };
 
+/**
+ * External interface to test code without always having to compile app
+ * @param {type} req
+ * @param {type} res
+ * @param {type} next
+ * @returns {unresolved}
+ */
+exports.testCode = function(req, res, next) {
+    utils.log("testCode", utils.logLevel.debug);
+    var paramNames = [
+        {"name": "app_uid", "required": false},
+        {"name": "app_version", "required": false},
+        {"name": "platform", "required": false},
+        {"name": "tag", "required": false}
+    ]
+    var statusParams = prepareRequest(req, paramNames);
+    var status = statusParams[0];
+    var params = statusParams[1];
+    var errorDescription = statusParams[2];
+
+    if (status != 200) {
+        utils.log("Error: " + errorDescription, utils.logLevel.debug);
+        res.send(status, errorDescription);
+        return next()
+    }
+    
+    loadAppsInfo(params.app_uid, params.app_version, function(apps) {
+        if (apps) {
+            var xml_config = xml2js;
+            
+            xmlFileToJs('config.xml', function (err, obj) {
+                if (err) throw (err);
+                jsToXmlFile('config2.xml', obj, function (err) {
+                    if (err) console.log(err);
+                })
+            });
+
+            function xmlFileToJs(filename, cb) {
+                var filepath = path.normalize(path.join(__dirname, filename));
+                fs.readFile(filepath, 'utf8', function (err, xmlStr) {
+                    if (err) throw (err);
+                    xml2js.parseString(xmlStr, {}, cb);
+                });    
+            }
+
+            function jsToXmlFile(filename, obj, cb) {
+                var filepath = path.normalize(path.join(__dirname, filename));
+                obj.widget.name[0] = "BananaRepublic";
+                obj.widget["RandomElement"] = "testy.png";
+                var builder = new xml2js.Builder();
+                var xml = builder.buildObject(obj);
+                fs.writeFile(filepath, xml, cb);
+                res.send(200, obj.widget.RandomElement);
+            }
+
+            //'<icon src="res/ios/icon.png" platform="ios" width="57" height="57" density="mdpi" />';
+            
+            
+        } else {
+            res.send(404, "No app found");
+        }
+    });
+};
+
 /*******************************************************************************
     Internal functions, not exported in module
 *******************************************************************************/
@@ -406,18 +477,18 @@ exports.getApp = function(req, res, next) {
     @param {Function} callback - Callback function to be called when done. 
         Should accept one parameter for the array containing the apps. Required.
 */
-function getApps(appUid, appVersion, callback) {
-    utils.log("getApps", utils.logLevel.debug);
+function loadAppsInfo(appUid, appVersion, callback) {
+    utils.log("loadAppsInfo", utils.logLevel.debug);
     var appsPath = [config.cordova_apps_path];
     if (appUid) {
         appsPath.push(appUid);
         if (appVersion) {
             appsPath.push(appVersion);
         } else {
-            utils.log("getApps no appVersion", utils.logLevel.debug);
+            utils.log("loadAppsInfo no appVersion", utils.logLevel.debug);
         }
     } else {
-        utils.log("getApps no appUid", utils.logLevel.debug);
+        utils.log("loadAppsInfo no appUid", utils.logLevel.debug);
     };
     var pathLength = appsPath.length;
     appsPath = appsPath.join(path.sep);
@@ -425,7 +496,7 @@ function getApps(appUid, appVersion, callback) {
 
         if (err || !stat.isDirectory()){
             if (err.code = "ENOENT"){
-                utils.log("getApps: app or version does not exist on compiler service", utils.logLevel.debug);
+                utils.log("loadAppsInfo: app or version does not exist on compiler service", utils.logLevel.debug);
             }
             return callback([]);
         }
@@ -520,7 +591,7 @@ function createNewApp(appUid, appVersion, tag, callback) {
 				}
 				// Create was successful, now fetch the app, write the config.xml file, 
 				// and do callback.
-				getApps(appUid, appVersion, function(apps) {
+				loadAppsInfo(appUid, appVersion, function(apps) {
 					var app = apps[0];
                     //app.prepareProject();
 //next line creates a /www symlink in rsync upload folder
