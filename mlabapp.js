@@ -246,6 +246,7 @@ exports.App.prototype = {
         var config_path = app.getConfigFilePath();
         var sourcecode_path = app.getInboxPath();
         var xml_root = "widget";
+        var mlab_app_config = JSON.parse(fs.readFileSync(sourcecode_path + config.filenames.mlab_app_config, 'utf8'));
         
         
         try {
@@ -258,6 +259,9 @@ exports.App.prototype = {
 //(multiple tags with same name = [], attributes are stored in {$} object and text nodes (i.e. content of tag) are stored in {_} }
         xmlFileToJs(config_path, function (err, data) {
             if (err) throw (err);
+            
+//update title
+            data[xml_root]["name"] = [mlab_app_config.title];
             
 //TODO check for error here
 //copy icon, will always exist
