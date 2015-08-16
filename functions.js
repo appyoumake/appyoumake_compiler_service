@@ -308,7 +308,10 @@ exports.compileApp = function(req, res, next) {
                             exec_file_checksum = app.getExecutableChecksum(params.platform);
                             performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, checksum_exec_file: exec_file_checksum, platform: params.platform, result: true, tag: params.tag}); 
                         } else {
-                            // Compile the app
+
+//prepare the config files (config.xml for all platforms, and the specific for the various platforms
+                            app.prepareConfiguration(params.platform);
+// Compile the app
                             app.compile(params.platform, function(compiled) {
                                 exec_file_checksum = app.getExecutableChecksum(params.platform);
                                 performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, checksum_exec_file: exec_file_checksum, platform: params.platform, result: compiled, tag: params.tag});
@@ -449,6 +452,8 @@ exports.testCode = function(req, res, next) {
 
             function jsToXmlFile(filename, obj, cb) {
                 var filepath = path.normalize(path.join(__dirname, filename));
+                res.send(200, JSON.stringify(obj));
+                return;
                 obj.widget.name[0] = "BananaRepublic";
                 obj.widget["RandomElement"] = "testy.png";
                 var builder = new xml2js.Builder();

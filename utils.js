@@ -297,6 +297,23 @@ exports.walkDir = function(dir, exclude, done) {
     });
 };
 
+exports.xmlFileToJs = function(filename, cb) {
+    var filepath = path.normalize(path.join(__dirname, filename));
+    fs.readFile(filepath, 'utf8', function (err, xmlStr) {
+        if (err) throw (err);
+        xml2js.parseString(xmlStr, {}, cb);
+    });
+}
+
+exports.jsToXmlFile = function(filename, obj, cb) {
+    var filepath = path.normalize(path.join(__dirname, filename));
+    obj.widget.name[0] = "BananaRepublic";
+    obj.widget["RandomElement"] = "testy.png";
+    var builder = new xml2js.Builder();
+    var xml = builder.buildObject(obj);
+    fs.writeFile(filepath, xml, cb);
+}
+
 var utils = exports;
 
 /**

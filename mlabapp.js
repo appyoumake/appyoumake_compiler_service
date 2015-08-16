@@ -232,6 +232,72 @@ exports.App.prototype = {
     },
     
     /**
+     * Update the config.xml file of the project. In this part we only do global actions
+     *  1: icon.png and splash.* are moved to a res folder inside the project (not created by Cordova, so must add this)
+     *  2: Update the title of the project, etc.
+     * 
+     * 
+     * For platform specific updates, such as adding permissions etc, we use the preBuild functions in platform specific prebuild javascript files
+     */
+    prepareConfiguration: function(platform) {
+        var app = this;
+        var app_path = app.getPath();
+        var res_path = path.join(app_path, "res");
+        var config_path = app.getConfigFilePath();
+        var sourcecode_path = app.getInboxPath();
+        var xml_root = "widget";
+        
+        
+        try {
+            fs.accessSync(res_path);
+        } catch (e) {
+            fs.mkdirSync(res_path);
+        }
+        
+//read in main config file into a JS object, if OK we update values in it befor storing it
+//(multiple tags with same name = [], attributes are stored in {$} object and text nodes (i.e. content of tag) are stored in {_} }
+        xmlFileToJs(config_path, function (err, data) {
+            if (err) throw (err);
+            
+//TODO check for error here
+//copy icon, will always exist
+            fs.writeFileSync(res_path + config.filenames.icon, fs.readFileSync(sourcecode_path + config.filenames.icon));
+            data[xml_root]["icon"] = { "$": { "src": "res/icon.png" }};
+            
+//copy splash screen, may or may not exist, and it may have .jpg or .png extension
+            var splash_ext = ".png";
+            try {
+                fs.accessSync(res_path + config.filenames.splash + splash_ext);
+            } catch (e) {
+                splash_ext = ".jpg";
+                try {
+                    fs.accessSync(res_path + config.filenames.splash + splash_ext);
+                } catch (e) {
+                    splash_ext = false;
+                }
+            }
+            if (splash_ext) {
+                fs.writeFileSync(res_path + config.filenames.splashscreen + splash_ext, fs.readFileSync(sourcecode_path + config.filenames.splashscreen + splash_ext));
+            }
+            
+            try {
+                var platform_pre_code = require("./preBuild_" + platform.toLowerCase() + ".js");
+                platform_pre_code.preBuild (app, config, platform, code, args, data);
+            } catch (e) {
+                if ( e.code === 'MODULE_NOT_FOUND' ) {
+                    utils.log("No prebuild available for " + platform, utils.logLevel.debug);
+                }
+            }
+            
+//finished updating config, now we'll save the file
+            jsToXmlFile(config_path, data, function (err) {
+                if (err) console.log(err);
+            })
+        });
+
+    },
+    
+    /**
         Wrapper function that kicks off the compile job, which may have to wait for a lock file to disappear.
         @param {String} platform - Platform to compile for. Required.
         @param {Function} callback - Called when done. Required.
@@ -243,9 +309,6 @@ exports.App.prototype = {
             if (!success) {
                 callback(true);
             } else {
-                /*var app_config = app.getConfig();
-                app_config["icon"]
-                '<icon src="res/ios/icon.png" platform="ios" width="57" height="57" density="mdpi" />';*/
                 app.doCompile(platform, callback);
             }
         });
@@ -269,14 +332,7 @@ exports.App.prototype = {
             var args = ["build", platform];
 
 //if there is a prebuild module available we load it an run the only function in it, which should be called postBuild
-            try {
-                var platform_pre_code = require("./postBuild_" + platform.toLowerCase() + ".js");
-                return platform_pre_code.preBuild (app, config, platform, code, args);
-            } catch (e) {
-                if ( e.code === 'MODULE_NOT_FOUND' ) {
-                    utils.log("No prebuild available for " + platform, utils.logLevel.debug);
-                }
-            }
+            app.prepareConfiguration(platform);
             
 // Start compilation process
             utils.log(config.cordova_bin_path + " " + args.join(" "), utils.logLevel.debug);
