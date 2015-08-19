@@ -234,7 +234,8 @@ exports.App.prototype = {
     /**
      * Update the config.xml file of the project. In this part we only do global actions
      *  1: icon.png and splash.* are moved to a res folder inside the project (not created by Cordova, so must add this)
-     *  2: Update the title of the project, etc.
+     *  2: Update the title of the project.
+     *  3: install plugins required
      * 
      * 
      * For platform specific updates, such as adding permissions etc, we use the preBuild functions in platform specific prebuild javascript files
@@ -253,6 +254,13 @@ exports.App.prototype = {
             fs.accessSync(res_path);
         } catch (e) {
             fs.mkdirSync(res_path);
+        }
+        
+//first we install the plugins specified. This has to go first as the external calls to cordova CLI comands will update the config.xml file
+        if (typeof mlab_app_config.plugins != "undefined") {
+            var temp_args = ["plugin", "add"];
+            temp_args.concat(mlab_app_config.plugins);
+            var build = child_process.spawnSync(config.cordova_bin_path, args, {cwd: app.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
         }
         
 //read in main config file into a JS object, if OK we update values in it befor storing it
@@ -283,7 +291,9 @@ exports.App.prototype = {
             if (splash_ext) {
                 fs.writeFileSync(res_path + config.filenames.splashscreen + splash_ext, fs.readFileSync(sourcecode_path + config.filenames.splashscreen + splash_ext));
             }
-            
+
+//finally we run the prebuild code specific to each platform.
+//This may contain anything, but a key thing to begin with is the splash screen which requires a lot of different entries in local config files.
             try {
                 var platform_pre_code = require("./preBuild_" + platform.toLowerCase() + ".js");
                 platform_pre_code.preBuild (app, config, platform, code, args, data);
