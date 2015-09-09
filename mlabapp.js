@@ -241,20 +241,24 @@ exports.App.prototype = {
      * For platform specific updates, such as adding permissions etc, we use the preBuild functions in platform specific prebuild javascript files
      */
     prepareConfiguration: function(platform) {
+console.log("aa");
         var app = this;
         var app_path = app.getPath();
         var res_path = path.join(app_path, "res");
         var config_path = app.getConfigFilePath();
         var sourcecode_path = app.getInboxPath();
         var xml_root = "widget";
-        var mlab_app_config = JSON.parse(fs.readFileSync(sourcecode_path + config.filenames.mlab_app_config, 'utf8'));
-        
+console.log(sourcecode_path + "/" + config.filenames.mlab_app_config);
+        var mlab_app_config = JSON.parse(fs.readFileSync(sourcecode_path + "/" + config.filenames.mlab_app_config, 'utf8'));
+console.log(res_path);
         
         try {
-            fs.accessSync(res_path);
+            fs.existsSync(res_path);
         } catch (e) {
+console.log("bb");
             fs.mkdirSync(res_path);
         }
+console.log("cc");
         
 //first we install the plugins specified. This has to go first as the external calls to cordova CLI comands will update the config.xml file
         if (typeof mlab_app_config.plugins != "undefined") {
@@ -262,10 +266,17 @@ exports.App.prototype = {
             temp_args.concat(mlab_app_config.plugins);
             var build = child_process.spawnSync(config.cordova_bin_path, args, {cwd: app.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
         }
-        
+console.log("dd " + config_path);
+
+
+/*
+
+
+
 //read in main config file into a JS object, if OK we update values in it befor storing it
 //(multiple tags with same name = [], attributes are stored in {$} object and text nodes (i.e. content of tag) are stored in {_} }
         xmlFileToJs(config_path, function (err, data) {
+console.log("ee");
             if (err) throw (err);
             
 //update title
@@ -273,8 +284,10 @@ exports.App.prototype = {
             
 //TODO check for error here
 //copy icon, will always exist
+console.log("ff");
             fs.writeFileSync(res_path + config.filenames.icon, fs.readFileSync(sourcecode_path + config.filenames.icon));
             data[xml_root]["icon"] = { "$": { "src": "res/icon.png" }};
+console.log("gg");
             
 //copy splash screen, may or may not exist, and it may have .jpg or .png extension
             var splash_ext = ".png";
@@ -288,9 +301,12 @@ exports.App.prototype = {
                     splash_ext = false;
                 }
             }
+console.log("hh");
+
             if (splash_ext) {
                 fs.writeFileSync(res_path + config.filenames.splashscreen + splash_ext, fs.readFileSync(sourcecode_path + config.filenames.splashscreen + splash_ext));
             }
+console.log("ii");
 
 //finally we run the prebuild code specific to each platform.
 //This may contain anything, but a key thing to begin with is the splash screen which requires a lot of different entries in local config files.
@@ -302,12 +318,13 @@ exports.App.prototype = {
                     utils.log("No prebuild available for " + platform, utils.logLevel.debug);
                 }
             }
+console.log("jj");
             
 //finished updating config, now we'll save the file
             jsToXmlFile(config_path, data, function (err) {
                 if (err) console.log(err);
             })
-        });
+        });*/
 
     },
     
@@ -317,9 +334,12 @@ exports.App.prototype = {
         @param {Function} callback - Called when done. Required.
     */
     compile: function(platform, callback) {
+console.log("1");
         utils.log("compile", utils.logLevel.debug);
         var app = this;
+console.log("2");
         utils.checkFileAndDo(app.getLockFilePath(platform), config.compile_check_interval, config.compile_check_max, "notexists", function(success) {
+console.log("3");
             if (!success) {
                 callback(true);
             } else {
@@ -335,13 +355,16 @@ exports.App.prototype = {
         @param {Function} callback - Called when done, with a single boolean parameter. Required.
     */
     doCompile: function(platform, callback) {
+console.log("4");
         utils.log("doCompile", utils.logLevel.debug);
         var app = this;
         // Write a lock file
         fs.writeFile(app.getLockFilePath(platform), "y");
         // Add the platform we are requesting
+console.log("5");
         app.addPlatform(platform, function(platformAdded) {
 // Do callback if platform has not been added
+console.log("6");
             if (!platformAdded) return callback(false);
             var args = ["build", platform];
 
@@ -351,7 +374,9 @@ exports.App.prototype = {
 // Start compilation process
             utils.log(config.cordova_bin_path + " " + args.join(" "), utils.logLevel.debug);
             utils.log("compiling...", utils.logLevel.debug);
+console.log("7");
             var build = child_process.spawn(config.cordova_bin_path, args, {cwd: app.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
+console.log("8");
             
 // Add some listeners to compile function
             build.on("close", function(code) {
@@ -396,7 +421,7 @@ exports.App.prototype = {
         app.platforms[platform].compiled = true;
         app.platforms[platform].compiledDate = new Date();
         app.platforms[platform].checksumCompiledSource = app.checksum;
-        app.platforms[platform].checksumCompiledExecutable = app.getExecutableChecksum();
+        app.platforms[platform].checksumCompiledExecutable = app.getExecutableChecksum(platform);
         utils.log("writing manifesto", utils.logLevel.debug);
         app.writeCompileManifesto(function() {
             callback(true);
