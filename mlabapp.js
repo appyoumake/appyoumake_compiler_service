@@ -262,6 +262,7 @@ console.log("cc");
         
 //first we install the plugins specified. This has to go first as the external calls to cordova CLI comands will update the config.xml file
         if (typeof mlab_app_config.plugins != "undefined") {
+console.log("Installing plugins");
             var temp_args = ["plugin", "add"];
             temp_args.concat(mlab_app_config.plugins);
             var build = child_process.spawnSync(config.cordova_bin_path, args, {cwd: app.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});

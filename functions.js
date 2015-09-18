@@ -21,7 +21,7 @@ var xml2js = require("xml2js");
 var mlabapp = require("./mlabapp.js");
 var utils = require('./utils.js');
 
-/* Constants */
+/* Constants TODO MOVE TO CONFIG*/
 // Addresses for callbacks
 var CALLBACK_URIS = {
     "createApp": "/callback/csAppCreated/",
@@ -555,6 +555,7 @@ function loadAppsInfo(appUid, appVersion, callback) {
     @param {Function} callback - Callback to call when done. Should accept parameter for App object created and app ID.
 */
 function createNewApp(appUid, appVersion, tag, callback) {
+debugger;
     utils.log("createNewApp " + appUid + " " + appVersion, utils.logLevel.debug);
 
     // Create directories in rsync share (inbox)
@@ -592,7 +593,10 @@ function createNewApp(appUid, appVersion, tag, callback) {
 			var args = [];
 			args.push("create");
 			args.push(projectPath);
-			args.push(appUid);
+			var tempAppUid = appUid.split(".");
+			tempAppUid[tempAppUid.length - 1] = "mlab" + tempAppUid[tempAppUid.length - 1]
+			
+			args.push(tempAppUid.join("."));
 			//args.push(appUid.split(".")[2]); // shouldn't there be an app name provided?
 			// Spawn a new process for creating app. Make sure that environment, UID and 
 			// GID is set correctly.
