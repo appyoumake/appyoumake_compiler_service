@@ -297,34 +297,24 @@ exports.compileApp = function(req, res, next) {
     }
 
     loadAppsInfo(params.app_uid, params.app_version, function(apps) {
-console.log("a");
         if (apps) {
-console.log("b");
             var app = apps[0];
             app.verify(params.checksum, function(verified) {
-console.log("c");
                 if (verified) {
-console.log("d");
                     app.checkCompiled(params.platform, params.checksum, function(compiled) {
-console.log("f");
                         if (compiled) {
                             // Not sure if "compiled" in callback should be true or false here. App is compiled, but not as result of this request.
                             utils.log("app already compiled", utils.logLevel.debug);
                             exec_file_checksum = app.getExecutableChecksum(params.platform);
                             performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, checksum_exec_file: exec_file_checksum, platform: params.platform, result: true, tag: params.tag}); 
                         } else {
-console.log("w");
 
 //prepare the config files (config.xml for all platforms, and the specific for the various platforms
                             app.prepareConfiguration(params.platform);
 // Compile the app
-console.log("q");
                             app.compile(params.platform, function(compiled) {
-console.log("y");
                                 exec_file_checksum = app.getExecutableChecksum(params.platform);
-console.log("x");
                                 performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, checksum_exec_file: exec_file_checksum, platform: params.platform, result: compiled, tag: params.tag});
-console.log("z");
                             });
                         }
                     });
@@ -637,7 +627,7 @@ debugger;
     @param {Object} params - Get params to append to callback URL.
 */
 function performCallback(callbackType, params) {
-    utils.log("performCallback " + callbackType, utils.logLevel.debug);
+    utils.log("---performCallback: " + callbackType, utils.logLevel.debug);
     var serverUrl = config.callback_server;
     var transport = http;
     port = (typeof config.callback_server_port != "undefined" ? config.callback_server_port : 80);
@@ -648,7 +638,7 @@ function performCallback(callbackType, params) {
     }
     var host = serverUrl.split("/")[2];
     var path = CALLBACK_URIS[callbackType] + "?passphrase=" + config.key + "&" + querystring.stringify(params);
-    utils.log(host + path, utils.logLevel.debug);
+    utils.log("Host + path + port = " + host + path + ":" + port, utils.logLevel.debug);
     var options = {
         hostname: host,
         path: path,
@@ -656,10 +646,10 @@ function performCallback(callbackType, params) {
         method: "GET"
     };
     var request = transport.request(options, function(response) {
-        utils.log("STATUS: " + response.statusCode, utils.logLevel.debug);
+        utils.log("---performCallback: STATUS: " + response.statusCode, utils.logLevel.debug);
     });
     request.on("error", function(e) {
-        utils.log("problem with request: " + e.message, utils.logLevel.error);
+        utils.log("---performCallback: PROBLEM: " + e.message, utils.logLevel.error);
     });
     request.end();
 };

@@ -241,33 +241,27 @@ exports.App.prototype = {
      * For platform specific updates, such as adding permissions etc, we use the preBuild functions in platform specific prebuild javascript files
      */
     prepareConfiguration: function(platform) {
-console.log("aa");
         var app = this;
         var app_path = app.getPath();
         var res_path = path.join(app_path, "res");
         var config_path = app.getConfigFilePath();
         var sourcecode_path = app.getInboxPath();
         var xml_root = "widget";
-console.log(sourcecode_path + "/" + config.filenames.mlab_app_config);
         var mlab_app_config = JSON.parse(fs.readFileSync(sourcecode_path + "/" + config.filenames.mlab_app_config, 'utf8'));
-console.log(res_path);
         
         try {
             fs.existsSync(res_path);
         } catch (e) {
-console.log("bb");
             fs.mkdirSync(res_path);
         }
-console.log("cc");
         
 //first we install the plugins specified. This has to go first as the external calls to cordova CLI comands will update the config.xml file
         if (typeof mlab_app_config.plugins != "undefined") {
-console.log("Installing plugins");
+            console.log("Installing plugins");
             var temp_args = ["plugin", "add"];
             temp_args.concat(mlab_app_config.plugins);
             var build = child_process.spawnSync(config.cordova_bin_path, args, {cwd: app.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
         }
-console.log("dd " + config_path);
 
 
 /*
@@ -335,12 +329,9 @@ console.log("jj");
         @param {Function} callback - Called when done. Required.
     */
     compile: function(platform, callback) {
-console.log("1");
         utils.log("compile", utils.logLevel.debug);
         var app = this;
-console.log("2");
         utils.checkFileAndDo(app.getLockFilePath(platform), config.compile_check_interval, config.compile_check_max, "notexists", function(success) {
-console.log("3");
             if (!success) {
                 callback(true);
             } else {
@@ -356,16 +347,13 @@ console.log("3");
         @param {Function} callback - Called when done, with a single boolean parameter. Required.
     */
     doCompile: function(platform, callback) {
-console.log("4");
         utils.log("doCompile", utils.logLevel.debug);
         var app = this;
         // Write a lock file
         fs.writeFile(app.getLockFilePath(platform), "y");
         // Add the platform we are requesting
-console.log("5");
         app.addPlatform(platform, function(platformAdded) {
 // Do callback if platform has not been added
-console.log("6");
             if (!platformAdded) return callback(false);
             var args = ["build", platform];
 
@@ -375,9 +363,7 @@ console.log("6");
 // Start compilation process
             utils.log(config.cordova_bin_path + " " + args.join(" "), utils.logLevel.debug);
             utils.log("compiling...", utils.logLevel.debug);
-console.log("7");
             var build = child_process.spawn(config.cordova_bin_path, args, {cwd: app.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
-console.log("8");
             
 // Add some listeners to compile function
             build.on("close", function(code) {
@@ -524,10 +510,10 @@ console.log("8");
         return md5File(filePath);
     },
     
-    /**
-        Get contents of config.xml file for Cordova app. Contents is parsed using xmldoc module.
-        @returns {Object} xmldoc object
-    */
+/**
+    Get contents of config.xml file for Cordova app. Contents is parsed using xmldoc module.
+    @returns {Object} xmldoc object
+*/
     getConfig: function() {
         var filePath = this.getConfigFilePath();
         var configXML;
@@ -541,10 +527,10 @@ console.log("8");
         return configXML;
     },
     
-    /**
-        Extract the app's name from the config.xml file.
-        @returns {String} Name of the app.
-    */
+/**
+    Extract the app's name from the config.xml file.
+    @returns {String} Name of the app.
+*/
     getNameFromConfig: function() {
         var configXML = this.getConfig();
         return configXML ? configXML.valueWithPath("name") : "";
@@ -554,11 +540,11 @@ console.log("8");
         
     },
     
-    /**
-        Write a new config.xml file. Will overwrite any existing file. No check is done on the contents of the file, but subsequent compile jobs will fail if this file is not correct.
-        @param {String} configXML - File contents to write. Required.
-        @param {Function} callback - Called when done, with App object as parameter. Required.
-    */
+/**
+    Write a new config.xml file. Will overwrite any existing file. No check is done on the contents of the file, but subsequent compile jobs will fail if this file is not correct.
+    @param {String} configXML - File contents to write. Required.
+    @param {Function} callback - Called when done, with App object as parameter. Required.
+*/
     writeConfig: function(configXML, callback) {
         var app = this;
         fs.writeFile(app.getConfigFilePath(), configXML, function(err) {
