@@ -17,5 +17,8 @@
     },
     "bugs": {
         "url": "http://github.com/YOUR_LOGIN/mlab_compiler.local.dev/issues"
+    },
+    "scripts": {
+        "start": "app.js"
     }
 }

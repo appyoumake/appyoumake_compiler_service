@@ -71,14 +71,14 @@ Create user and group `mlab_cs`. Set password and remember. When set in the CS c
 
 ```
 groupadd mlab_cs
-useradd -g -m mlab_cs mlab_cs
+useradd -m -g mlab_cs mlab_cs
 passwd mlab_cs
 ```
 
 To add other users to the mlab_cs group: `usermod -a -G mlab_cs username`. It is necessary to logout and back in if the user being added is logged in.
 
 
-### Preparing filesystem, create mlab_cs user
+### Preparing filesystem
 We will let the compiler service do most of its magic in the /var/local/mlab_cs folder
 The compiler service will look for www-folders, and more, of the apps to be compiled in: `/var/local/mlab_cs/inbox`
 The compiler service and cordova will use the folder `/var/local/mlab_cs/working` for compiling apps

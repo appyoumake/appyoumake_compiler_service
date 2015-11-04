@@ -241,18 +241,21 @@ exports.App.prototype = {
      * For platform specific updates, such as adding permissions etc, we use the preBuild functions in platform specific prebuild javascript files
      */
     prepareConfiguration: function(platform) {
-        console.log("Prepare configuration for " + platform)
+        utils.log("Prepare configuration for " + platform, utils.logLevel.debug)
         var app = this;
         var app_path = app.getPath();
         var res_path = path.join(app_path, "res");
         var config_path = app.getConfigFilePath();
         var sourcecode_path = app.getInboxPath();
         var xml_root = "widget";
+
         var mlab_app_config = JSON.parse(fs.readFileSync(sourcecode_path + "/" + config.filenames.mlab_app_config, 'utf8'));
+        utils.log(mlab_app_config, utils.logLevel.debug)
         
         try {
             fs.existsSync(res_path);
         } catch (e) {
+            utils.log("res path does not exist", utils.logLevel.debug)
             fs.mkdirSync(res_path);
         }
         
