@@ -249,9 +249,11 @@ exports.App.prototype = {
         var sourcecode_path = app.getInboxPath();
         var xml_root = "widget";
 
-        var mlab_app_config = JSON.parse(fs.readFileSync(sourcecode_path + "/" + config.filenames.mlab_app_config, 'utf8'));
-        utils.log(mlab_app_config, utils.logLevel.debug)
-        
+        var mlab_app_config = JSON.parse(fs.readFileSync(sourcecode_path + "/" + config.filenames.mlab_app_config, 'utf8', function (err, data){
+            if (err) throw err;
+            utils.log(data, utils.logLevel.debug);
+        }));
+
         try {
             fs.existsSync(res_path);
         } catch (e) {
