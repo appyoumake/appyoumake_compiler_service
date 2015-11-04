@@ -308,7 +308,7 @@ exports.compileApp = function(req, res, next) {
                             exec_file_checksum = app.getExecutableChecksum(params.platform);
                             performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, checksum_exec_file: exec_file_checksum, platform: params.platform, result: true, tag: params.tag}); 
                         } else {
-
+                            utils.log("app not compiled, need to compile", utils.logLevel.debug);
 //prepare the config files (config.xml for all platforms, and the specific for the various platforms
                             app.prepareConfiguration(params.platform);
 // Compile the app

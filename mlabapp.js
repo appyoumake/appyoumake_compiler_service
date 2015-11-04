@@ -241,6 +241,7 @@ exports.App.prototype = {
      * For platform specific updates, such as adding permissions etc, we use the preBuild functions in platform specific prebuild javascript files
      */
     prepareConfiguration: function(platform) {
+        console.log("Prepare configuration for " + platform)
         var app = this;
         var app_path = app.getPath();
         var res_path = path.join(app_path, "res");
@@ -255,7 +256,7 @@ exports.App.prototype = {
             fs.mkdirSync(res_path);
         }
         
-//first we install the plugins specified. This has to go first as the external calls to cordova CLI comands will update the config.xml file
+    //first we install the plugins specified. This has to go first as the external calls to cordova CLI comands will update the config.xml file
         if (typeof mlab_app_config.plugins != "undefined") {
             console.log("Installing plugins");
             var temp_args = ["plugin", "add"];
