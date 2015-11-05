@@ -13,7 +13,7 @@
     "os": "linux",
     "compile_check_interval": 1000, 
     "compile_check_max": 60000,
-    "filenames": {"icon": "icon.png", "splashscreen": "splash"},
+    "filenames": {"icon": "icon.png", "splashscreen": "splash", "mlab_app_config": "conf.json"},
     "platforms": ["android", "ios"],
     "environment": {},
     "android": {

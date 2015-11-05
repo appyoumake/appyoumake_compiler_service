@@ -248,12 +248,9 @@ exports.App.prototype = {
         var config_path = app.getConfigFilePath();
         var sourcecode_path = app.getInboxPath();
         var xml_root = "widget";
-
-        var mlab_app_config = JSON.parse(fs.readFileSync(sourcecode_path + "/" + config.filenames.mlab_app_config, 'utf8', function (err, data){
-            if (err) throw err;
-            utils.log(data, utils.logLevel.debug);
-        }));
-
+        var mlab_app_config_filename = config.filenames.mlab_app_config;
+        if (typeof mlab_app_config_filename == 'undefined') utils.log("filename.mlab_app_config not defined in config");
+        var mlab_app_config = JSON.parse(fs.readFileSync(sourcecode_path + "/" + mlab_app_config_filename, 'utf8'));
         try {
             fs.existsSync(res_path);
         } catch (e) {
@@ -261,7 +258,7 @@ exports.App.prototype = {
             fs.mkdirSync(res_path);
         }
         
-    //first we install the plugins specified. This has to go first as the external calls to cordova CLI comands will update the config.xml file
+    //first we install the plugins specified. This has to go first as the external calls to cordova CLI commands will update the config.xml file
         if (typeof mlab_app_config.plugins != "undefined") {
             console.log("Installing plugins");
             var temp_args = ["plugin", "add"];
