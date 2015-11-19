@@ -46,7 +46,6 @@
 
 var server;
 var restify = require("restify");
-
 var utils = require("./utils.js");
 var functions = require("./functions.js");
 

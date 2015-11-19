@@ -205,9 +205,11 @@ exports.App.prototype = {
             if (code!==0) utils.log("Error adding platform", utils.logLevel.error);
             callback(true);
         });
+
         addPlatform.stderr.on("data", function (data) {
             utils.log("stderr: " + data, utils.logLevel.error);
         });
+
         addPlatform.stdout.on("data", function (data) {
             utils.log("stdout: " + data, utils.logLevel.debug);
         });
@@ -241,7 +243,7 @@ exports.App.prototype = {
      * For platform specific updates, such as adding permissions etc, we use the preBuild functions in platform specific prebuild javascript files
      */
     prepareConfiguration: function(platform) {
-        utils.log("Prepare configuration for " + platform, utils.logLevel.debug)
+        utils.log("Prepare configuration for " + platform, utils.logLevel.debug);
         var app = this;
         var app_path = app.getPath();
         var res_path = path.join(app_path, "res");
@@ -251,11 +253,11 @@ exports.App.prototype = {
         var mlab_app_config_filename = config.filenames.mlab_app_config;
         if (typeof mlab_app_config_filename == 'undefined') utils.log("filename.mlab_app_config not defined in config");
         var mlab_app_config = JSON.parse(fs.readFileSync(sourcecode_path + "/" + mlab_app_config_filename, 'utf8'));
+
+//need to create a res folder, nodejs is not too cool about checking for file existence, need a try/catch
         try {
-            fs.existsSync(res_path);
-        } catch (e) {
-            utils.log("res path does not exist", utils.logLevel.debug)
             fs.mkdirSync(res_path);
+        } catch (e) {
         }
         
     //first we install the plugins specified. This has to go first as the external calls to cordova CLI commands will update the config.xml file
@@ -267,25 +269,20 @@ exports.App.prototype = {
         }
 
 
-/*
-
-
-
 //read in main config file into a JS object, if OK we update values in it befor storing it
 //(multiple tags with same name = [], attributes are stored in {$} object and text nodes (i.e. content of tag) are stored in {_} }
-        xmlFileToJs(config_path, function (err, data) {
-console.log("ee");
+        utils.xmlFileToJs(config_path, function (err, data) {
             if (err) throw (err);
             
+debugger;
+
 //update title
             data[xml_root]["name"] = [mlab_app_config.title];
             
 //TODO check for error here
 //copy icon, will always exist
-console.log("ff");
             fs.writeFileSync(res_path + config.filenames.icon, fs.readFileSync(sourcecode_path + config.filenames.icon));
             data[xml_root]["icon"] = { "$": { "src": "res/icon.png" }};
-console.log("gg");
             
 //copy splash screen, may or may not exist, and it may have .jpg or .png extension
             var splash_ext = ".png";
@@ -299,12 +296,10 @@ console.log("gg");
                     splash_ext = false;
                 }
             }
-console.log("hh");
 
             if (splash_ext) {
                 fs.writeFileSync(res_path + config.filenames.splashscreen + splash_ext, fs.readFileSync(sourcecode_path + config.filenames.splashscreen + splash_ext));
             }
-console.log("ii");
 
 //finally we run the prebuild code specific to each platform.
 //This may contain anything, but a key thing to begin with is the splash screen which requires a lot of different entries in local config files.
@@ -316,24 +311,41 @@ console.log("ii");
                     utils.log("No prebuild available for " + platform, utils.logLevel.debug);
                 }
             }
-console.log("jj");
             
 //finished updating config, now we'll save the file
-            jsToXmlFile(config_path, data, function (err) {
+            utils.jsToXmlFile(config_path, data, function (err) {
                 if (err) console.log(err);
             })
-        });*/
+        });
 
     },
     
     /**
         Wrapper function that kicks off the compile job, which may have to wait for a lock file to disappear.
+        If lock file is older than 
         @param {String} platform - Platform to compile for. Required.
         @param {Function} callback - Called when done. Required.
     */
     compile: function(platform, callback) {
         utils.log("compile", utils.logLevel.debug);
         var app = this;
+        var lock_filename = app.getLockFilePath(platform);
+debugger;
+// Remove stale lock file
+        try {
+            var lockinfo = fs.statSync(lock_filename);
+            var endTime, now;
+            now = new Date().getTime();
+            endTime = new Date(lockinfo.mtime).getTime() + (config.compile_lock_timeout * 1000);
+            if (now > endTime) {
+                utils.log("Removing lock file", utils.logLevel.debug);
+                fs.unlink(lock_filename);
+                utils.log("Deleted old lock file", utils.logLevel.debug);
+            }
+        } catch (e) {
+            utils.log("No lock file", utils.logLevel.debug);
+        }
+
         utils.checkFileAndDo(app.getLockFilePath(platform), config.compile_check_interval, config.compile_check_max, "notexists", function(success) {
             if (!success) {
                 callback(true);
@@ -354,39 +366,52 @@ console.log("jj");
         var app = this;
         // Write a lock file
         fs.writeFile(app.getLockFilePath(platform), "y");
-        // Add the platform we are requesting
+
+// Add the platform we are requesting
         app.addPlatform(platform, function(platformAdded) {
+
 // Do callback if platform has not been added
             if (!platformAdded) return callback(false);
             var args = ["build", platform];
 
 //if there is a prebuild module available we load it an run the only function in it, which should be called postBuild
             app.prepareConfiguration(platform);
-            
+
 // Start compilation process
             utils.log(config.cordova_bin_path + " " + args.join(" "), utils.logLevel.debug);
             utils.log("compiling...", utils.logLevel.debug);
-            var build = child_process.spawn(config.cordova_bin_path, args, {cwd: app.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
+/*
+            try {
+                var build = child_process.spawn(config.cordova_bin_path, args, {cwd: app.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
             
 // Add some listeners to compile function
-            build.on("close", function(code) {
-//if there is a postbuild module available we load it an run the only function in it, which should be called postBuild
-                try {
-                    var platform_post_code = require("./postBuild_" + platform.toLowerCase() + ".js");
-                    return platform_post_code.postBuild (app, platform, code, callback);
-                } catch (e) {
-                    if ( e.code === 'MODULE_NOT_FOUND' ) {
-                        return app.compileFinished(platform, code, callback); 
+                build.on("close", function(code) {
+//if there is a postbuild module available we load it and run the only function in it, which should be called postBuild
+                    try {
+                        var platform_post_code = require("./postBuild_" + platform.toLowerCase() + ".js");
+                        return platform_post_code.postBuild (app, platform, code, callback);
+                    } catch (e) {
+                        if ( e.code === 'MODULE_NOT_FOUND' ) {
+                            return app.compileFinished(platform, code, callback); 
+                        }
                     }
-                }
-            });
-            
-            build.stderr.on("data", function (data) {
-                utils.log("stderr: " + data, utils.logLevel.error);
-            });
-            build.stdout.on("data", function (data) {
-                utils.log("stdout: " + data, utils.logLevel.trace);
-            });
+                });
+                
+                build.stderr.on("data", function (data) {
+                    utils.log("stderr: " + data, utils.logLevel.error);
+                });
+                build.stdout.on("data", function (data) {
+                    utils.log("stdout: " + data, utils.logLevel.trace);
+                });
+
+            } catch (e) {
+                utils.log(e, utils.logLevel.error);
+// Remove lock file
+                utils.log("Removing lock file", utils.logLevel.debug);
+                fs.unlink(app.getLockFilePath(platform));
+            }
+*/
+
         });
     },
 
@@ -399,7 +424,8 @@ console.log("jj");
     */
     compileFinished: function(platform, code, callback) {
         var app = this;
-        // Remove lock file
+// Remove lock file
+        utils.log("Removing lock file", utils.logLevel.debug);
         fs.unlink(app.getLockFilePath(platform));
         
         // Do false callback if we got an error

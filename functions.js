@@ -309,8 +309,6 @@ exports.compileApp = function(req, res, next) {
                             performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, checksum_exec_file: exec_file_checksum, platform: params.platform, result: true, tag: params.tag}); 
                         } else {
                             utils.log("app not compiled, need to compile", utils.logLevel.debug);
-//prepare the config files (config.xml for all platforms, and the specific for the various platforms
-                            app.prepareConfiguration(params.platform);
 // Compile the app
                             app.compile(params.platform, function(compiled) {
                                 exec_file_checksum = app.getExecutableChecksum(params.platform);
@@ -431,44 +429,6 @@ exports.testCode = function(req, res, next) {
         return next()
     }
     
-    loadAppsInfo(params.app_uid, params.app_version, function(apps) {
-        if (apps) {
-            var xml_config = xml2js;
-            
-            xmlFileToJs('config.xml', function (err, obj) {
-                if (err) throw (err);
-                jsToXmlFile('config2.xml', obj, function (err) {
-                    if (err) console.log(err);
-                })
-            });
-
-            function xmlFileToJs(filename, cb) {
-                var filepath = path.normalize(path.join(__dirname, filename));
-                fs.readFile(filepath, 'utf8', function (err, xmlStr) {
-                    if (err) throw (err);
-                    xml2js.parseString(xmlStr, {}, cb);
-                });    
-            }
-
-            function jsToXmlFile(filename, obj, cb) {
-                var filepath = path.normalize(path.join(__dirname, filename));
-                res.send(200, JSON.stringify(obj));
-                return;
-                obj.widget.name[0] = "BananaRepublic";
-                obj.widget["RandomElement"] = "testy.png";
-                var builder = new xml2js.Builder();
-                var xml = builder.buildObject(obj);
-                fs.writeFile(filepath, xml, cb);
-                res.send(200, obj.widget.RandomElement);
-            }
-
-            //'<icon src="res/ios/icon.png" platform="ios" width="57" height="57" density="mdpi" />';
-            
-            
-        } else {
-            res.send(404, "No app found");
-        }
-    });
 };
 
 /*******************************************************************************
@@ -647,7 +607,14 @@ function performCallback(callbackType, params) {
     };
     var request = transport.request(options, function(response) {
         utils.log("---performCallback: STATUS: " + response.statusCode, utils.logLevel.debug);
+	  response.on('data', function (chunk) {
+		console.log(chunk);
+	    // Do something with `chunk` here
+	  });
     });
+request.on('data', function (chunk) {
+		console.log(chunk.toString());
+  });
     request.on("error", function(e) {
         utils.log("---performCallback: PROBLEM: " + e.message, utils.logLevel.error);
     });

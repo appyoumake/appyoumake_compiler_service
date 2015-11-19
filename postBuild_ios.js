@@ -15,7 +15,7 @@ function postBuild (app, config, platform, code, callback) {
     var platformPath = app.getPlatformPath(platform);
     var execOptions = {env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()};
     utils.log("Starting compile process for " + app.name, utils.logLevel.debug);
-    utils.log("./bin/compileios.sh " + [platformPath, "'" + app.name + "'", "'" + config.ios.provisioning_profile + "'"].join(" "))
+    utils.log("./bin/compileios.sh " + [platformPath, "'" + app.name + "'", "'" + config.ios.provisioning_profile + "'"].join(" "));
     var compile = child_process.spawn("./bin/compileios.sh", [platformPath, app.name, config.ios.provisioning_profile], execOptions);
     compile.on("close", function(code) {
         utils.log("compile: " + code);
