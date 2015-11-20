@@ -15,6 +15,7 @@ var fs = require("fs");
 var path = require("path");
 var child_process = require("child_process");
 var log4js = require("log4js"); 
+var xml2js = require("xml2js");
 
 // Some global variables
 var environment, uid, gid, logger;
@@ -240,18 +241,24 @@ exports.checkFileAndDo = function(filePath, interval, maxTime, criteria, callbac
     utils.log("criteria " + criteria, utils.logLevel.debug);
 
     if (!interval) { 
-        interval = 1000; // One second
+        ms_interval = 1000; // One second
     } else {
-        interval = interval * 1000;
-    }
-    if (!maxTime) {
-        maxTime = 10000; // Ten seconds
-    } else {
-        maxTime = maxTime * 1000;
+        ms_interval = interval * 1000;
     }
 
-    if (!criteria) criteria = "notexists";
-    if (!timeElapsed) timeElapsed = 0;'
+    if (!maxTime) {
+        ms_maxTime = 10000; // Ten seconds
+    } else {
+        ms_maxTime = maxTime * 1000;
+    }
+
+    if (!criteria) {
+        criteria = "notexists";
+    }
+
+    if (!timeElapsed) {
+        timeElapsed = 0;
+    }
 
 // Check file
 
@@ -262,21 +269,22 @@ exports.checkFileAndDo = function(filePath, interval, maxTime, criteria, callbac
 
 // Lock file exists.
         } else {
-            // Check if we have passed our timeout
+
+// Check if we have passed our timeout
             utils.log("timeElapsed: " + timeElapsed, utils.logLevel.debug);
-            if (timeElapsed>=maxTime) {
+            if (timeElapsed >= ms_maxTime) {
                 utils.log("giving up, took too long", utils.logLevel.error);
                 callback(false);
             }
-            // Otherwise, wait some time and try again
+// Otherwise, wait some time and try again
             else {
                 if (criteria==="notexists") utils.log("wait for lock file to disappear", utils.logLevel.debug);
                 if (criteria==="exists") utils.log("wait for file to appear", utils.logLevel.debug);
                 setTimeout(function() { 
-                    utils.log("In timeout function", utils.logLevel.debug);
-                    timeElapsed += interval;
-                    utils.checkFileAndDo(filePath, interval, maxTime, criteria, callback, timeElapsed);
-                }, interval);
+                    exports.log("In timeout function", utils.logLevel.debug);
+                    timeElapsed += ms_interval;
+                    exports.checkFileAndDo(filePath, interval, maxTime, criteria, callback, timeElapsed);
+                }, ms_interval);
             }
         }
     });
@@ -316,7 +324,6 @@ exports.walkDir = function(dir, exclude, done) {
 exports.xmlFileToJs = function(filename, cb) {
     fs.readFile(filename, 'utf8', function (err, xmlStr) {
         if (err) throw (err);
-debugger;
         xml2js.parseString(xmlStr, cb);
     });
 }

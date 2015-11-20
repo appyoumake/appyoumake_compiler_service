@@ -505,7 +505,7 @@ function loadAppsInfo(appUid, appVersion, callback) {
     @param {Function} callback - Callback to call when done. Should accept parameter for App object created and app ID.
 */
 function createNewApp(appUid, appVersion, tag, callback) {
-debugger;
+
     utils.log("createNewApp " + appUid + " " + appVersion, utils.logLevel.debug);
 
     // Create directories in rsync share (inbox)
