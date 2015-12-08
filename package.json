@@ -1,24 +1,36 @@
 {
-    "name": "mlab_compiler.local.dev",
-    "description": "",
-    "version": "0.0.1",
-    "main": "./mlab_compiler.local.dev.js",
-    "author": {
-        "name": "Arild Bergh",
-        "email": "info@bergh.fm"
-    },
-    "keywords": [],
-    "licenses": {
-        "type": "none"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/YOUR_LOGIN/mlab_compiler.local.dev.git"
-    },
-    "bugs": {
-        "url": "http://github.com/YOUR_LOGIN/mlab_compiler.local.dev/issues"
-    },
-    "scripts": {
-        "start": "node app.js"
-    }
+  "name": "mlab_compiler",
+  "description": "Compiler service for MLAB",
+  "version": "0.0.2",
+  "main": "./app.js",
+  "author": "FFI Sinett",
+  "keywords": [
+    "MLAB",
+    "Compiler",
+    "Service",
+    "Cordova"
+  ],
+  "license": "AGPL-1.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Sinett/mlab_compiler.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Sinett/mlab_compiler/issues"
+  },
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "fs": "^0.0.2",
+    "jsdoc": "^3.4.0",
+    "log4js": "^0.6.29",
+    "md5": "^2.0.0",
+    "md5-file": "^2.0.4",
+    "path": "^0.12.7",
+    "pm2": "^0.15.10",
+    "restify": "^4.0.3",
+    "xml2js": "^0.4.15",
+    "xmldoc": "^0.4.0"
+  }
 }
