@@ -59,6 +59,8 @@ Some Android SDK tools (used by Cordova) are still only 32-bits. To make them wo
 sudo apt-get install lib32stdc++6 lib32z1  
 ```
 
+To make sure cordova will find the sdk, the safest is to add the `/opt/android-sdk/tools` and `/opt/android-sdk/platform-tools` to `/etc/environment`  
+
 ### Cordova
 Install cordova globaly  with:  
 ```
