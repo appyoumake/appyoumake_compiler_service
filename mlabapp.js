@@ -261,7 +261,7 @@ exports.App.prototype = {
         }
         
     //first we install the plugins specified. This has to go first as the external calls to cordova CLI commands will update the config.xml file
-        if (typeof mlab_app_config.plugins != "undefined") {
+        if (typeof mlab_app_config.plugins != "undefined" && mlab_app_config.plugins.length > 0) {
             console.log("Installing plugins");
             var temp_args = ["plugin", "add"];
             temp_args.concat(mlab_app_config.plugins);
