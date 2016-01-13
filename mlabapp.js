@@ -284,14 +284,16 @@ exports.App.prototype = {
             data[xml_root]["icon"] = { "$": { "src": "res/icon.png" }};
             
 //copy splash screen, may or may not exist, and it may have .jpg or .png extension
-            for (var i=0, ii=config.filenames.splash_ext.length; i<ii; i++) {
-                var source_path = path.join(sourcecode_path, config.filenames.splashscreen) + "." + config.filenames.splash_ext[i];
-                var dest_path = path.join(res_path, config.filenames.splashscreen) + "." + config.filenames.splash_ext[i];
-                try {
-                    fs.writeFileSync(dest_path, fs.readFileSync(source_path));
-                    utils.log("Copied splash screen", utils.logLevel.debug);
-                } catch (e) {
-                    utils.log("No splash screen to copy", utils.logLevel.debug);
+            if (typeof config.filenames.splash_ext != "undefined") {
+                for (var i = 0, ii = config.filenames.splash_ext.length; i < ii; i++) {
+                    var source_path = path.join(sourcecode_path, config.filenames.splashscreen) + "." + config.filenames.splash_ext[i];
+                    var dest_path = path.join(res_path, config.filenames.splashscreen) + "." + config.filenames.splash_ext[i];
+                    try {
+                        fs.writeFileSync(dest_path, fs.readFileSync(source_path));
+                        utils.log("Copied splash screen", utils.logLevel.debug);
+                    } catch (e) {
+                        utils.log("No splash screen to copy", utils.logLevel.debug);
+                    }
                 }
             }
 
