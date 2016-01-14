@@ -264,7 +264,7 @@ exports.App.prototype = {
         if (typeof mlab_app_config.plugins != "undefined" && mlab_app_config.plugins.length > 0) {
             console.log("Installing plugins");
             var temp_args = ["plugin", "add"];
-            temp_args.concat(mlab_app_config.plugins);
+            var args = temp_args.concat(mlab_app_config.plugins);
             var build = child_process.spawnSync(config.cordova_bin_path, args, {cwd: app.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
         }
 
@@ -379,7 +379,6 @@ exports.App.prototype = {
 
 //if there is a prebuild module available we load it an run the only function in it, which should be called postBuild
             app.prepareConfiguration(platform, function() {
-debugger;
 
 // Start compilation process
                 var args = ["build", platform];
