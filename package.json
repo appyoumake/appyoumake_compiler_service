@@ -19,7 +19,8 @@
     "url": "http://github.com/Sinett/mlab_compiler/issues"
   },
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "debug": "node-debug --web-host=0.0.0.0 --web-port=8090 --cli app.js"
   },
   "dependencies": {
     "fs": "^0.0.2",

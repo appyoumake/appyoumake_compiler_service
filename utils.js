@@ -329,7 +329,6 @@ exports.xmlFileToJs = function(filename, cb) {
 }
 
 exports.jsToXmlFile = function(filename, obj, cb) {
-debugger;
     var builder = new xml2js.Builder();
     var xml = builder.buildObject(obj);
     fs.writeFile(filename, xml, cb);

@@ -380,8 +380,21 @@ exports.App.prototype = {
 //if there is a prebuild module available we load it an run the only function in it, which should be called postBuild
             app.prepareConfiguration(platform, function() {
 
+// Prepare app for compilation
+                var args = ["prepare", platform];
+                utils.log("Command: " + config.cordova_bin_path + " " + args.join(" "), utils.logLevel.debug);
+                try {
+                    var cordova_prepare = child_process.spawn(config.cordova_bin_path, args, {cwd: app.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
+
+                    cordova_prepare.on("close", function(code) {
+                        utils.log("Done preparing", utils.logLevel.debug);
+                    });
+                } catch (e) {
+                    utils.log(e, utils.logLevel.error);
+                };
+
 // Start compilation process
-                var args = ["build", platform];
+                var args = ["compile", platform];
                 utils.log("Starting actual compilation using Cordova...", utils.logLevel.debug);
                 utils.log("Command: " + config.cordova_bin_path + " " + args.join(" "), utils.logLevel.debug);
                 try {
