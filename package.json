@@ -1,24 +1,25 @@
 {
-    "name": "mlab_compiler.local.dev",
-    "description": "",
-    "version": "0.0.1",
-    "main": "./mlab_compiler.local.dev.js",
-    "author": {
-        "name": "Arild Bergh",
-        "email": "info@bergh.fm"
-    },
-    "keywords": [],
-    "licenses": {
-        "type": "none"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/YOUR_LOGIN/mlab_compiler.local.dev.git"
-    },
-    "bugs": {
-        "url": "http://github.com/YOUR_LOGIN/mlab_compiler.local.dev/issues"
-    },
-    "scripts": {
-        "start": "node app.js"
-    }
+  "name": "mlab_compiler.local.dev",
+  "description": "",
+  "version": "0.0.1",
+  "main": "./mlab_compiler.local.dev.js",
+  "author": {
+    "name": "Arild Bergh",
+    "email": "info@bergh.fm"
+  },
+  "keywords": [],
+  "licenses": {
+    "type": "none"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/YOUR_LOGIN/mlab_compiler.local.dev.git"
+  },
+  "bugs": {
+    "url": "http://github.com/YOUR_LOGIN/mlab_compiler.local.dev/issues"
+  },
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {}
 }
