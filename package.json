@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "mlab_compiler.local.dev",
   "description": "",
   "version": "0.0.1",
@@ -22,4 +23,41 @@
     "start": "node app.js"
   },
   "dependencies": {}
+=======
+  "name": "mlab_compiler",
+  "description": "Compiler service for MLAB",
+  "version": "0.0.2",
+  "main": "./app.js",
+  "author": "FFI Sinett",
+  "keywords": [
+    "MLAB",
+    "Compiler",
+    "Service",
+    "Cordova"
+  ],
+  "license": "AGPL-1.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Sinett/mlab_compiler.git"
+  },
+  "bugs": {
+    "url": "http://github.com/Sinett/mlab_compiler/issues"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "debug": "node-debug --web-host=0.0.0.0 --web-port=8090 --cli app.js"
+  },
+  "dependencies": {
+    "fs": "^0.0.2",
+    "jsdoc": "^3.4.0",
+    "log4js": "0.6.22",
+    "md5": "2.0.0",
+    "md5-file": "2.0.3",
+    "path": "^0.12.7",
+    "pm2": "0.12.14",
+    "restify": "3.0.1",
+    "xml2js": "0.4.6",
+    "xmldoc": "0.3.0"
+  }
+>>>>>>> 567ac10117ac2ff78555f568f035c2496b6900b6
 }

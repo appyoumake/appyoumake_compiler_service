@@ -15,6 +15,7 @@ var fs = require("fs");
 var path = require("path");
 var child_process = require("child_process");
 var log4js = require("log4js"); 
+var xml2js = require("xml2js");
 
 // Some global variables
 var environment, uid, gid, logger;
@@ -74,19 +75,19 @@ exports.setup = function() {
 			var getUid = child_process.spawn("id", ["-u", user], {env:environment});
 			getUid.stdout.on("data", function(data) {
 				uid = parseInt(data.toString());
-				exports.log("Running commands as " + user + ", " + uid, exports.logLevel.info, true);
+				exports.log("Running commands as " + user + ", " + uid, utils.logLevel.info, true);
 			});
 			getUid.stderr.on("data", function (data) {
-				exports.log("stderr utils.setup getUid: " + data, exports.logLevel.error);
+				exports.log("stderr utils.setup getUid: " + data, utils.logLevel.error);
 				uid = null;
 			});
 			var getGid = child_process.spawn("id", ["-g", user], {env:environment});
 			getGid.stdout.on("data", function(data) {
 				gid = parseInt(data.toString());
-                exports.log("Running commands as " + user + ", " + uid + " group: " + gid + " ", exports.logLevel.info, true);
+                utils.log("Running commands as " + user + ", " + uid + " group: " + gid + " ", utils.logLevel.info, true);
 			});
 			getGid.stderr.on("data", function (data) {
-				exports.log("stderr utils.setup getGid: " + data, exports.logLevel.error);
+				utils.log("stderr utils.setup getGid: " + data, utils.logLevel.error);
 				gid = null;
 			});
 		}
@@ -179,7 +180,7 @@ exports.getConfig = function() {
 exports.getEnvironment = function(platform) {
     var env  = environment;
     if (platform) {
-        env = exports.clone(environment);
+        env = utils.clone(environment);
         for (key in config[platform].environment || {}) {
             env[key] = config[platform].environment[key];
         }
@@ -203,7 +204,7 @@ exports.getDirs = function(basePath, depth, callback, dirs) {
             var stat = fs.statSync(dirPath);
             if (!stat.isDirectory()) continue;
             if (depth==1) dirs.push(dirPath);
-            exports.getDirs(dirPath, depth-1, callback, dirs);
+            utils.getDirs(dirPath, depth-1, callback, dirs);
         }
     });
 };
@@ -237,30 +238,53 @@ exports.clone = function(ob,deep) {
 */
 exports.checkFileAndDo = function(filePath, interval, maxTime, criteria, callback, timeElapsed) {
     utils.log("checkFileAndDo " + filePath, utils.logLevel.debug);
-    if (!interval) interval = 1000; // One second
-    if (!maxTime) maxTime = 10000; // Ten seconds
-    if (!criteria) criteria = "notexists";
-    if (!timeElapsed) timeElapsed = 0;
-    // Check file
+    utils.log("criteria " + criteria, utils.logLevel.debug);
+
+    if (!interval) { 
+        ms_interval = 1000; // One second
+    } else {
+        ms_interval = interval * 1000;
+    }
+
+    if (!maxTime) {
+        ms_maxTime = 10000; // Ten seconds
+    } else {
+        ms_maxTime = maxTime * 1000;
+    }
+
+    if (!criteria) {
+        criteria = "notexists";
+    }
+
+    if (!timeElapsed) {
+        timeElapsed = 0;
+    }
+
+// Check file
+
     fs.stat(filePath, function(err, stat) {
-        // Criteria is met. Do the thing.
-        if ((criteria==="notexists" && err) || (criteria==="exists" && !err)) callback(true);
-        // Lock file exists.
-        else {
-            // Check if we have passed our timeout
+// Criteria is met. Do the thing.
+        if ((criteria==="notexists" && err) || (criteria==="exists" && !err)) {
+            callback(true);
+
+// Lock file exists.
+        } else {
+
+// Check if we have passed our timeout
             utils.log("timeElapsed: " + timeElapsed, utils.logLevel.debug);
-            if (timeElapsed>=maxTime) {
+            if (timeElapsed >= ms_maxTime) {
                 utils.log("giving up, took too long", utils.logLevel.error);
                 callback(false);
             }
-            // Otherwise, wait some time and try again
+// Otherwise, wait some time and try again
             else {
                 if (criteria==="notexists") utils.log("wait for lock file to disappear", utils.logLevel.debug);
                 if (criteria==="exists") utils.log("wait for file to appear", utils.logLevel.debug);
                 setTimeout(function() { 
-                    timeElapsed += interval;
+                    exports.log("In timeout function", utils.logLevel.debug);
+                    timeElapsed += ms_interval;
                     exports.checkFileAndDo(filePath, interval, maxTime, criteria, callback, timeElapsed);
-                }, interval);
+                }, ms_interval);
             }
         }
     });
@@ -280,7 +304,7 @@ exports.walkDir = function(dir, exclude, done) {
             file = path.resolve(dir, file);
             fs.stat(file, function(err, stat) {
                 if (stat && stat.isDirectory()) {
-                    exports.walkDir(file, exclude, function(err, res) {
+                    utils.walkDir(file, exclude, function(err, res) {
                         results = results.concat(res);
                         if (!--pending)
                             done(null, results);
@@ -298,20 +322,16 @@ exports.walkDir = function(dir, exclude, done) {
 };
 
 exports.xmlFileToJs = function(filename, cb) {
-    var filepath = path.normalize(path.join(__dirname, filename));
-    fs.readFile(filepath, 'utf8', function (err, xmlStr) {
+    fs.readFile(filename, 'utf8', function (err, xmlStr) {
         if (err) throw (err);
-        xml2js.parseString(xmlStr, {}, cb);
+        xml2js.parseString(xmlStr, cb);
     });
 }
 
 exports.jsToXmlFile = function(filename, obj, cb) {
-    var filepath = path.normalize(path.join(__dirname, filename));
-    obj.widget.name[0] = "BananaRepublic";
-    obj.widget["RandomElement"] = "testy.png";
     var builder = new xml2js.Builder();
     var xml = builder.buildObject(obj);
-    fs.writeFile(filepath, xml, cb);
+    fs.writeFile(filename, xml, cb);
 }
 
 var utils = exports;

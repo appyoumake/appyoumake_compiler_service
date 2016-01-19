@@ -23,8 +23,16 @@ Install instructions for Compiler service with Android compiling on Xubuntu 14.0
 Then install the tools ...   
  
 ### Node js
+
+Ubuntu 14 comes with an old node version, so install from ppa (https://github.com/nodesource/distributions#debinstall)
+
 ```
-sudo apt-get install nodejs  
+curl -sL https://deb.nodesource.com/setup_5.x | sudo -E bash -
+sudo apt-get install nodejs
+```
+
+FIX! The following may not be necessary ..
+```
 sudo apt-get install npm  
 sudo apt-get install nodejs-legacy   
 ```
@@ -50,6 +58,8 @@ Some Android SDK tools (used by Cordova) are still only 32-bits. To make them wo
 ```
 sudo apt-get install lib32stdc++6 lib32z1  
 ```
+
+To make sure cordova will find the sdk, the safest is to add the `/opt/android-sdk/tools` and `/opt/android-sdk/platform-tools` to `/etc/environment`  
 
 ### Cordova
 Install cordova globaly  with:  
@@ -179,6 +189,13 @@ cd MLAB
 git clone https://github.com/Sinettlab/mlab_compiler.git
 ```
 
+Install dependencies:
+```
+cd mlab_compiler
+npm install
+```
+This will install node.js dependencies in a `node_modules` folder within the `mlab_compiler` folder
+
 Edit config/config.json
 
 * `cordova_user` is the user to perform the cordova commands. The user running the node.js server would need privileges to run these commands as a different user if they are not the same. Use `mlab_cs` if no good reason not to.
@@ -190,7 +207,7 @@ Edit config/config.json
 ### Run the Compiler service
 * in console:  
    - cd into directory  
-   - `node app.js`  
+   - `node app.js` or `npm start` 
 
 * Serve as daemon:
     - cd into directory
