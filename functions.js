@@ -607,14 +607,21 @@ function performCallback(callbackType, params) {
     };
     var request = transport.request(options, function(response) {
         utils.log("---performCallback: STATUS: " + response.statusCode, utils.logLevel.debug);
-	  response.on('data', function (chunk) {
-		console.log(chunk);
-	    // Do something with `chunk` here
-	  });
+        var temp_body = '';
+        response.on('data', function (chunk) {
+            temp_body += chunk;
+        });
+        response.on('end', function () {
+            console.log('BODY PERFORMCALLBACK RESPONSE: ' + temp_body);
+        });
     });
-request.on('data', function (chunk) {
-		console.log(chunk.toString());
-  });
+    var temp_body2 = '';
+    request.on('data', function (chunk) {
+        temp_body2 += chunk;
+    });
+    request.on('end', function () {
+            console.log('BODY PERFORMCALLBACK REQUEST: ' + temp_body2);
+    });
     request.on("error", function(e) {
         utils.log("---performCallback: PROBLEM: " + e.message, utils.logLevel.error);
     });
