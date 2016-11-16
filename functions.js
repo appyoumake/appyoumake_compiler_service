@@ -32,7 +32,7 @@ var xml2js = require("xml2js");
 var mlabapp = require("./mlabapp.js");
 var utils = require('./utils.js');
 
-/* Constants */
+/* Constants TODO MOVE TO CONFIG*/
 // Addresses for callbacks
 var CALLBACK_URIS = {
     "createApp": "/callback/csAppCreated/",
@@ -319,9 +319,7 @@ exports.compileApp = function(req, res, next) {
                             exec_file_checksum = app.getExecutableChecksum(params.platform);
                             performCallback("compileApp", {app_uid: app.id, app_version: app.version, checksum: app.checksum, checksum_exec_file: exec_file_checksum, platform: params.platform, result: true, tag: params.tag}); 
                         } else {
-
-//prepare the config files (config.xml for all platforms, and the specific for the various platforms
-                            app.prepareConfiguration(params.platform);
+                            utils.log("app not compiled, need to compile", utils.logLevel.debug);
 // Compile the app
                             app.compile(params.platform, function(compiled) {
                                 exec_file_checksum = app.getExecutableChecksum(params.platform);
@@ -442,44 +440,6 @@ exports.testCode = function(req, res, next) {
         return next()
     }
     
-    loadAppsInfo(params.app_uid, params.app_version, function(apps) {
-        if (apps) {
-            var xml_config = xml2js;
-            
-            xmlFileToJs('config.xml', function (err, obj) {
-                if (err) throw (err);
-                jsToXmlFile('config2.xml', obj, function (err) {
-                    if (err) console.log(err);
-                })
-            });
-
-            function xmlFileToJs(filename, cb) {
-                var filepath = path.normalize(path.join(__dirname, filename));
-                fs.readFile(filepath, 'utf8', function (err, xmlStr) {
-                    if (err) throw (err);
-                    xml2js.parseString(xmlStr, {}, cb);
-                });    
-            }
-
-            function jsToXmlFile(filename, obj, cb) {
-                var filepath = path.normalize(path.join(__dirname, filename));
-                res.send(200, JSON.stringify(obj));
-                return;
-                obj.widget.name[0] = "BananaRepublic";
-                obj.widget["RandomElement"] = "testy.png";
-                var builder = new xml2js.Builder();
-                var xml = builder.buildObject(obj);
-                fs.writeFile(filepath, xml, cb);
-                res.send(200, obj.widget.RandomElement);
-            }
-
-            //'<icon src="res/ios/icon.png" platform="ios" width="57" height="57" density="mdpi" />';
-            
-            
-        } else {
-            res.send(404, "No app found");
-        }
-    });
 };
 
 /*******************************************************************************
@@ -556,6 +516,7 @@ function loadAppsInfo(appUid, appVersion, callback) {
     @param {Function} callback - Callback to call when done. Should accept parameter for App object created and app ID.
 */
 function createNewApp(appUid, appVersion, tag, callback) {
+
     utils.log("createNewApp " + appUid + " " + appVersion, utils.logLevel.debug);
 
     // Create directories in rsync share (inbox)
@@ -593,7 +554,10 @@ function createNewApp(appUid, appVersion, tag, callback) {
 			var args = [];
 			args.push("create");
 			args.push(projectPath);
-			args.push(appUid);
+			var tempAppUid = appUid.split(".");
+			tempAppUid[tempAppUid.length - 1] = "mlab" + tempAppUid[tempAppUid.length - 1]
+			
+			args.push(tempAppUid.join("."));
 			//args.push(appUid.split(".")[2]); // shouldn't there be an app name provided?
 			// Spawn a new process for creating app. Make sure that environment, UID and 
 			// GID is set correctly.
@@ -634,7 +598,7 @@ function createNewApp(appUid, appVersion, tag, callback) {
     @param {Object} params - Get params to append to callback URL.
 */
 function performCallback(callbackType, params) {
-    utils.log("performCallback " + callbackType, utils.logLevel.debug);
+    utils.log("---performCallback: " + callbackType, utils.logLevel.debug);
     var serverUrl = config.callback_server;
     var transport = http;
     port = (typeof config.callback_server_port != "undefined" ? config.callback_server_port : 80);
@@ -645,7 +609,7 @@ function performCallback(callbackType, params) {
     }
     var host = serverUrl.split("/")[2];
     var path = CALLBACK_URIS[callbackType] + "?passphrase=" + config.key + "&" + querystring.stringify(params);
-    utils.log(host + path, utils.logLevel.debug);
+    utils.log("Host + path + port = " + host + path + ":" + port, utils.logLevel.debug);
     var options = {
         hostname: host,
         path: path,
@@ -653,10 +617,24 @@ function performCallback(callbackType, params) {
         method: "GET"
     };
     var request = transport.request(options, function(response) {
-        utils.log("STATUS: " + response.statusCode, utils.logLevel.debug);
+        utils.log("---performCallback: STATUS: " + response.statusCode, utils.logLevel.debug);
+        var temp_body = '';
+        response.on('data', function (chunk) {
+            temp_body += chunk;
+        });
+        response.on('end', function () {
+            console.log('BODY PERFORMCALLBACK RESPONSE: ' + temp_body);
+        });
+    });
+    var temp_body2 = '';
+    request.on('data', function (chunk) {
+        temp_body2 += chunk;
+    });
+    request.on('end', function () {
+            console.log('BODY PERFORMCALLBACK REQUEST: ' + temp_body2);
     });
     request.on("error", function(e) {
-        utils.log("problem with request: " + e.message, utils.logLevel.error);
+        utils.log("---performCallback: PROBLEM: " + e.message, utils.logLevel.error);
     });
     request.end();
 };

@@ -58,7 +58,6 @@ For the full copyright and license information, please view the LICENSE_MLAB fil
 
 var server;
 var restify = require("restify");
-
 var utils = require("./utils.js");
 var functions = require("./functions.js");
 
