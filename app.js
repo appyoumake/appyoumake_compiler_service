@@ -1,5 +1,20 @@
+/*******************************************************************************************************************************
+@copyright Copyright (c) 2013-2016, Norwegian Defence Research Establishment (FFI) - All Rights Reserved
+
+@license Proprietary and confidential
+
+@author Morten Krane (Snapper) - first version 
+@author Arild Bergh/Sinett 3.0 programme (firstname.lastname@ffi.no) additional functionality, bug fixes
+@author Bård Reitan/Sinett 3.0 programme (firstname.lastname@ffi.no) testing, bug fixes
+
+Unauthorized copying of this file, via any medium is strictly prohibited 
+
+For the full copyright and license information, please view the LICENSE_MLAB file that was distributed with this source code.
+*******************************************************************************************************************************/
 /**
     #MLAB Compiler Service
+
+    @module Compiler Service
     
     REST API for compiling Cordova apps built with MLAB. Currently supports compiling for Android and iOS.
     
@@ -34,9 +49,6 @@
     log4js: https://github.com/nomiddlename/log4js-node
     PM2: https://github.com/Unitech/pm2
     
-    @author Author: Snapper Net Solutions
-    @copyright Copyright (c) 2015
-    @module Compiler Service
 
 */
 /*
