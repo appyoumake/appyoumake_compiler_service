@@ -5,7 +5,7 @@
     "inbox_path": "/var/local/mlab_cs/inbox",
     "cordova_apps_path": "/var/local/mlab_cs/working",
     "cordova_user": "mlab_cs",
-    "key": "RLjYNDVQEh6fA*;zthtftc9m",
+    "key": "xxx",
     "callback_server": "http://127.0.0.1",
     "callback_server_port": 80,
     "log_level": "DEBUG",
