@@ -1,3 +1,6 @@
+# REPLACED BY COMMON DOCUMENTION IN https://github.com/Sinettlab/openMLAB
+
+
 MLAB Compiler Service
 ----------------------------------------------------------------
 Copyright (c) 2013-2016, Norwegian Defence Research Establishment (FFI) - All Rights Reserved
