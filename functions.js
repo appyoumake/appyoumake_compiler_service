@@ -423,6 +423,7 @@ exports.getApp = function(req, res, next) {
  */
 exports.testCode = function(req, res, next) {
     utils.log("testCode", utils.logLevel.debug);
+    
     var paramNames = [
         {"name": "app_uid", "required": false},
         {"name": "app_version", "required": false},
@@ -608,7 +609,12 @@ function performCallback(callbackType, params) {
         port = 443;
     }
     var host = serverUrl.split("/")[2];
-    var path = CALLBACK_URIS[callbackType] + "?passphrase=" + config.key + "&" + querystring.stringify(params);
+    if (config.callback_server_debug) {
+        var path = config.callback_server_debug + CALLBACK_URIS[callbackType] + "?passphrase=" + config.key + "&" + querystring.stringify(params);
+    } else {
+        var path = CALLBACK_URIS[callbackType] + "?passphrase=" + config.key + "&" + querystring.stringify(params);
+    }
+    
     utils.log("Host + path + port = " + host + path + ":" + port, utils.logLevel.debug);
     var options = {
         hostname: host,

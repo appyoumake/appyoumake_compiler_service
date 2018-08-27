@@ -8,6 +8,7 @@
     "key": "xxx",
     "callback_server": "http://127.0.0.1",
     "callback_server_port": 80,
+    "callback_server_debug": "/app_dev.php",
     "log_level": "DEBUG",
     "exclude_from_checksum": ["conf.json"],
     "os": "linux",
@@ -21,8 +22,8 @@
             "ANDROID_HOME": "/opt/android-sdk/",
             "JAVA_HOME": "/usr/lib/jvm/java-8-oracle/jre/"
         },
-        "executable_path": "build/outputs/apk/",
-        "executable_filename": "android-debug",
+        "executable_path": "app/build/outputs/apk/debug",
+        "executable_filename": "app-debug",
         "executable_extension": "apk",
         "executable_mime_type": "application/vnd.android.package-archive"
     },

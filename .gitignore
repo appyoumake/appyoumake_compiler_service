@@ -2,3 +2,4 @@ apps/*/
 *.log
 config/config.json
 node_modules/*/
+/nbproject/private/

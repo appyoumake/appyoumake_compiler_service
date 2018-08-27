@@ -77,31 +77,31 @@ server.use(restify.bodyParser({mapParams: true}));
 /**
     GET getAppStatus (sync, not async), returns an array of objects which = associative array of app info
 */
-server.get({path: "/getAppStatus", version: "1"}, functions.getAppStatus);
+server.get({path: "/getAppStatus"}, functions.getAppStatus);
 /**
     GET createApp, runs the cordova create function
 */
-server.get({path: "/createApp", version: "1"}, functions.createApp);
+server.get({path: "/createApp"}, functions.createApp);
 /**
     GET verifyApp, checks if checksum of source code here is same as on calling client
 */
-server.get({path: "/verifyApp", version: "1"}, functions.verifyApp);
+server.get({path: "/verifyApp"}, functions.verifyApp);
 /**
     POST compileApp, runs the cordova comilation function
 */
-server.get({path: "/compileApp", version: "1"}, functions.compileApp);
+server.get({path: "/compileApp"}, functions.compileApp);
 /**
     GET getExecChecksum (sync, not async), shortcut to get the checksum of the currently compiled executable
 */
-server.get({path: "/getExecChecksum", version: "1"}, functions.getExecChecksum);
+server.get({path: "/getExecChecksum"}, functions.getExecChecksum);
 /**
     GET getApp, requests the executable for download
 */
-server.get({path: "/getApp", version: "1"}, functions.getApp);
+server.get({path: "/getApp"}, functions.getApp);
 /**
     GET testCode, simple wrapper to check code without compiling
 */
-server.get({path: "/testCode", version: "1"}, functions.testCode);
+server.get({path: "/testCode"}, functions.testCode);
 
 // Start listening
 server.listen(config.port_number ,config.listen_on_ip, function(){

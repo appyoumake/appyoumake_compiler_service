@@ -208,7 +208,7 @@ exports.App.prototype = {
     */
     addPlatform: function(platform, callback) {
         utils.log("addPlatform " + platform, utils.logLevel.debug);
-        var addPlatform = child_process.spawn(config.cordova_bin_path, ["platform", "add", platform], {cwd: this.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
+        var addPlatform = child_process.spawn(config.cordova_bin_path, ["platform", "add", platform], {cwd: this.getPath()});
         //var addPlatform = child_process.spawn(config.cordova_bin_path, ["platform", "add", platform], {cwd: this.getPath(), uid: utils.getUid()});
 
         addPlatform.on("close", function(code) {
@@ -275,7 +275,7 @@ exports.App.prototype = {
             console.log("Installing plugins");
             var temp_args = ["plugin", "add"];
             var args = temp_args.concat(mlab_app_config.plugins);
-            var build = child_process.spawnSync(config.cordova_bin_path, args, {cwd: app.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
+            var build = child_process.spawnSync(config.cordova_bin_path, args, {cwd: app.getPath()});
         }
 
 
@@ -394,7 +394,7 @@ exports.App.prototype = {
                 var args = ["prepare", platform];
                 utils.log("Command: " + config.cordova_bin_path + " " + args.join(" "), utils.logLevel.debug);
                 try {
-                    var cordova_prepare = child_process.spawn(config.cordova_bin_path, args, {cwd: app.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
+                    var cordova_prepare = child_process.spawn(config.cordova_bin_path, args, {cwd: app.getPath()});
 
                     cordova_prepare.on("close", function(code) {
                         utils.log("Done preparing", utils.logLevel.debug);
@@ -408,7 +408,7 @@ exports.App.prototype = {
                 utils.log("Starting actual compilation using Cordova...", utils.logLevel.debug);
                 utils.log("Command: " + config.cordova_bin_path + " " + args.join(" "), utils.logLevel.debug);
                 try {
-                    var build = child_process.spawn(config.cordova_bin_path, args, {cwd: app.getPath(), env: utils.getEnvironment(platform), uid: utils.getUid(), gid: utils.getGid()});
+                    var build = child_process.spawn(config.cordova_bin_path, args, {cwd: app.getPath()});
             
 // Add some listeners to compile function
                     build.on("close", function(code) {
