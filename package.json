@@ -23,6 +23,7 @@
     "debug": "node-debug --web-host=0.0.0.0 --web-port=8090 --cli app.js"
   },
   "dependencies": {
+    "cordova": "^8.1.2",
     "fs": "^0.0.2",
     "jsdoc": "^3.4.0",
     "log4js": "0.6.22",
