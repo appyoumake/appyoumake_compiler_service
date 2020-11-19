@@ -1,14 +1,11 @@
 /*******************************************************************************************************************************
-@copyright Copyright (c) 2013-2016, Norwegian Defence Research Establishment (FFI) - All Rights Reserved
+@copyright Copyright (c) 2013-2016, Norwegian Defence Research Establishment (FFI)
 
-@license Proprietary and confidential
+@license Licensed under the Apache License, Version 2.0 (For the full copyright and license information, please view the /LICENSE_APPYOUMAKE.md file that was distributed with this source code)
 
 @author Morten Krane (Snapper) - first version 
 @author Arild Bergh/Sinett 3.0 programme (firstname.lastname@ffi.no) additional functionality, bug fixes
 
-Unauthorized copying of this file, via any medium is strictly prohibited 
-
-For the full copyright and license information, please view the LICENSE_MLAB file that was distributed with this source code.
 *******************************************************************************************************************************/
 /**
     Appyoumake Compiler Service
