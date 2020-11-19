@@ -31,6 +31,7 @@
         "provisioning_profile": "MLAB dev",
         "executable_path": "out",
         "executable_extension": "ipa",
+        "executable_filename": "app-debug",
         "executable_mime_type": "application/octet-stream",
         "permission_translation": {
             "ACCESS_LOCATION_EXTRA_COMMANDS": "",
