@@ -12,11 +12,11 @@ Unauthorized copying of this file, via any medium is strictly prohibited
 For the full copyright and license information, please view the LICENSE_MLAB file that was distributed with this source code.
 *******************************************************************************************************************************/
 /**
-    #MLAB Compiler Service
+    #Appyoumake Compiler Service
 
     @module Compiler Service
     
-    REST API for compiling Cordova apps built with MLAB. Currently supports compiling for Android and iOS.
+    REST API for compiling Cordova apps built with Appyoumake. Currently supports compiling for Android and iOS.
     
     Consists of:
         app.js - This file. Starts the server and defines routes.

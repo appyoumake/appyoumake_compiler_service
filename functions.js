@@ -12,7 +12,7 @@ Unauthorized copying of this file, via any medium is strictly prohibited
 For the full copyright and license information, please view the LICENSE_MLAB file that was distributed with this source code.
 *******************************************************************************************************************************/
 /**
-    MLAB Compiler Service
+    Appyoumake Compiler Service
     Functions for app
     
     @module Functions
@@ -28,7 +28,7 @@ var https = require("https");
 var querystring = require("querystring");
 var xml2js = require("xml2js");
 
-// Mlab modules
+// Appyoumake modules
 var mlabapp = require("./mlabapp.js");
 var utils = require('./utils.js');
 
@@ -594,7 +594,7 @@ function createNewApp(appUid, appVersion, tag, callback) {
 /**
     Generic function to fetch a callback URL. The callback server is defined in config.callback_server.
 
-    The passphrase param is added here as it applies to all functions, this = the config.key and is used on the other side (i.e. the mlab editor) to verif that the callback is executed by a proper server
+    The passphrase param is added here as it applies to all functions, this = the config.key and is used on the other side (i.e. the Appyoumake editor) to verif that the callback is executed by a proper server
     @param {String} callbackType - What callback to perform. Looks at CALLBACK_URIS to see what URI should be called. Allowed values: "createApp", "verifyApp", "compiledApp". Required.
     @param {Object} params - Get params to append to callback URL.
 */

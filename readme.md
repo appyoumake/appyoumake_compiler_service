@@ -1,11 +1,20 @@
-# REPLACED BY COMMON DOCUMENTION IN https://github.com/Sinettlab/openMLAB
+Appyoumake App Builder; Compiler Service source code (version 0.9.1)
+====================================
+Copyright (c) 2013-2016, Norwegian Defence Research Establishment (FFI)
 
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-MLAB Compiler Service
-----------------------------------------------------------------
-Copyright (c) 2013-2016, Norwegian Defence Research Establishment (FFI) - All Rights Reserved
-Proprietary and confidential
-For the full copyright and license information, please view the LICENSE_MLAB file that was distributed with this source code.
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+FOR MORE INFO REFER TO THE /doc DIRECTORY
 
 
 Install instructions for Compiler service with Android compiling on Xubuntu 14.04:
@@ -107,7 +116,7 @@ chown -R root:mlab_cs /var/local/mlab_cs
 chmod -R 770 /var/local/mlab_cs
 ```
 
-The `inbox` is the dir used for the rsync share. The MLAB editor will put apps to be compiled in this dir.
+The `inbox` is the dir used for the rsync share. The Appyoumake editor will put apps to be compiled in this dir.
 The `working` directory is the working directory for the compiler service. Cordova commands are run in this directory. 
 
 ### rsync
@@ -143,7 +152,7 @@ service rsync
     flags = IPv6
 }
 ```
-Create the file `/etc/rsyncd.conf` configuration for rsync in daemon mode. This would make the share `cs_inbox` read and writable for user `mlab`.
+Create the file `/etc/rsyncd.conf` configuration for rsync in daemon mode. This would make the share `cs_inbox` read and writable for user `Appyoumake`.
 
 ```
 max connections = 6
@@ -157,14 +166,14 @@ read only = no
 list = yes
 uid = mlab_cs
 gid = mlab_cs
-auth users = mlab
+auth users = Appyoumake
 secrets file = /etc/rsyncd.secrets
 ```
 
-Create /etc/rsyncd.secrets for mlab user's password. Replace `password` with a suitable password. 
+Create /etc/rsyncd.secrets for Appyoumake user's password. Replace `password` with a suitable password. 
 ```
 sudo vim /etc/rsyncd.secrets 
-mlab:password
+Appyoumake:password
 ```
 
 This step sets the file permissions for rsyncd.secrets.
@@ -181,7 +190,7 @@ Testing rsync
 
 Run the following command to check if everything is ok. You will be asked for the password and the output would be the content of the share (probably empty).
 ```
-rsync mlab@localhost::cs_inbox
+rsync Appyoumake@localhost::cs_inbox
 ```
 
 
@@ -190,8 +199,8 @@ Logg in as mlab_cs and
 
 ```bash
 cd ~
-mkdir MLAB
-cd MLAB
+mkdir Appyoumake
+cd Appyoumake
 git clone https://github.com/Sinettlab/mlab_compiler.git
 ```
 

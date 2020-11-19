@@ -12,7 +12,7 @@ Unauthorized copying of this file, via any medium is strictly prohibited
 For the full copyright and license information, please view the LICENSE_MLAB file that was distributed with this source code.
 *******************************************************************************************************************************/
 /**
-    MLAB Compiler Service
+    Appyoumake Compiler Service
     Utility functions
     
     @module Utils

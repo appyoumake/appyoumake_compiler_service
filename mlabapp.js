@@ -11,10 +11,10 @@ Unauthorized copying of this file, via any medium is strictly prohibited
 For the full copyright and license information, please view the LICENSE_MLAB file that was distributed with this source code.
 *******************************************************************************************************************************/
 /**
-    MLAB Compiler Service
+    Appyoumake Compiler Service
     App class
     
-    @module MLAB App
+    @module Appyoumake App
 */
 
 
@@ -27,7 +27,7 @@ var child_process = require("child_process");
 var xmldoc = require("xmldoc");
 var xml2js = require("xml2js");
 
-// Add Mlab modules
+// Add Appyoumake modules
 var utils = require('./utils.js');
 
 // Get necessary things.

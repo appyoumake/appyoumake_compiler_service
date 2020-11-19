@@ -1,11 +1,11 @@
 {
   "name": "mlab_compiler",
-  "description": "Compiler service for MLAB",
+  "description": "Compiler service for Appyoumake",
   "version": "0.0.2",
   "main": "./app.js",
   "author": "FFI Sinett",
   "keywords": [
-    "MLAB",
+    "Appyoumake",
     "Compiler",
     "Service",
     "Cordova"
